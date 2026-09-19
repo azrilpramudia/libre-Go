@@ -1,6 +1,6 @@
 -- name: CreateBook :one
 INSERT INTO books (title, isbn, openlibrary_id, cover_url, category_id, stock, available)
-VALUES ($1, $2, $3, $4, $5, $6, $6)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING *;
 
 -- name: GetBookByID :one
