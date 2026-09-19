@@ -1,25 +1,27 @@
 <script>
   import { Router, Route } from "svelte-routing";
+  
+  // Import semua halaman yang ada di folder pages
   import Home from "./pages/Home.svelte";
-  import Koleksi from "./pages/Koleksi.svelte";
   import Login from "./pages/Login.svelte";
+  import Daftar from "./pages/Daftar.svelte"; // Kita buat ini setelah ini
 
   export let url = "";
 </script>
 
 <Router {url}>
-  
-  <!-- Cara Svelte 5: Masukkan komponen ke dalam tag Route, BUKAN sebagai atribut -->
+  <!-- Rute Halaman Utama -->
   <Route path="/">
     <Home />
   </Route>
-  
-  <Route path="/koleksi">
-    <Koleksi />
-  </Route>
-  
+
+  <!-- Rute Halaman Login -->
   <Route path="/login">
     <Login />
   </Route>
 
+  <!-- Rute Halaman Pendaftaran -->
+  <Route path="/daftar">
+    <Daftar />
+  </Route>
 </Router>

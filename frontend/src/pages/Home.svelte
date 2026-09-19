@@ -52,17 +52,32 @@
       </div>
 
       <div class="flex items-center gap-4">
-        <div class="relative hidden md:block w-64">
+        <!-- Search Bar di dalam Navbar -->
+        <div class="relative hidden md:block w-48 lg:w-64">
           <input
             type="text"
             bind:value={searchQuery}
-            placeholder="Cari buku, penulis..."
-            class="w-full pl-5 pr-10 py-2 rounded-full border border-gray-200 bg-gray-50 focus:outline-none focus:border-[#9B9AFF] text-sm text-gray-700 transition"
+            placeholder="Cari buku..."
+            class="w-full pl-5 pr-10 py-2.5 rounded-full border border-gray-200 bg-gray-50 focus:outline-none focus:border-[#9B9AFF] text-sm text-gray-700 transition"
           />
           <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">🔍</span>
         </div>
+
+        <!-- TOMBOL LOGIN & DAFTAR BARU -->
+        <Link to="/login">
+          <span class="text-sm font-bold text-gray-700 hover:text-[#9B9AFF] transition cursor-pointer hidden sm:block">
+            Login
+          </span>
+        </Link>
+        <Link to="/daftar">
+          <span class="bg-[#9B9AFF] hover:bg-[#8382ff] text-white text-sm font-bold py-2.5 px-6 rounded-full shadow-[0_4px_15px_rgba(155,154,255,0.4)] transition transform hover:-translate-y-1 cursor-pointer whitespace-nowrap">
+            Daftar
+          </span>
+        </Link>
+        
       </div>
     </nav>
+    
 
     <!-- Seksyen Hero -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[70vh]">
