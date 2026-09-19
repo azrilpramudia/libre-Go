@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+body {
+  /* Memastikan background mint teraplikasi penuh */
+  background-color: #DFFCE2; 
+}
