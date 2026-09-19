@@ -13,7 +13,7 @@ import (
 
 const createBook = `-- name: CreateBook :one
 INSERT INTO books (title, isbn, openlibrary_id, cover_url, category_id, stock, available)
-VALUES ($1, $2, $3, $4, $5, $6, $6)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id, title, isbn, openlibrary_id, cover_url, category_id, stock, available, created_at, updated_at
 `
 
@@ -24,6 +24,7 @@ type CreateBookParams struct {
 	CoverUrl      pgtype.Text `json:"cover_url"`
 	CategoryID    pgtype.UUID `json:"category_id"`
 	Stock         int32       `json:"stock"`
+	Available     int32       `json:"available"`
 }
 
 func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, error) {
@@ -34,6 +35,7 @@ func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, e
 		arg.CoverUrl,
 		arg.CategoryID,
 		arg.Stock,
+		arg.Available,
 	)
 	var i Book
 	err := row.Scan(
