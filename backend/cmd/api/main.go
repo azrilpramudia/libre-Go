@@ -1,9 +1,21 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	fmt.Prinln("Server running on port 3000")
+	r := gin.Default()
+
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status":"ok"})
+	})
+
+	log.Println("Server Running on :5000")
+	if err := r.Run(":5000"); err != nil {
+		log.Fatal(err)
+	}
 }
