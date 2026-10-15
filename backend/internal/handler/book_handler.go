@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/azrilpramudia/libre-go/internal/client/openlibrary"
 	"github.com/azrilpramudia/libre-go/internal/domain/book"
 	"github.com/azrilpramudia/libre-go/internal/service"
 	"github.com/gin-gonic/gin"
@@ -11,11 +12,12 @@ import (
 )
 
 type BookHandler struct {
-	svc *service.BookService
+	svc      *service.BookService
+	olClient *openlibrary.Client
 }
 
-func NewBookHandler(svc *service.BookService) *BookHandler {
-	return &BookHandler{svc: svc}
+func NewBookHandler(svc *service.BookService, olClient *openlibrary.Client) *BookHandler {
+	return &BookHandler{svc: svc, olClient: olClient}
 }
 
 type createBookRequest struct {
@@ -67,4 +69,19 @@ func (h *BookHandler) GetByID(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, b)
+}
+
+func (h *BookHandler) SearchOpenLibrary(c *gin.Context) {
+	title := c.Query("title")
+	if title == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "title query param required"})
+		return
+	}
+
+	result, err := h.olClient.SearchByTitle(c.Request.Context(), title)
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, result)
 }
