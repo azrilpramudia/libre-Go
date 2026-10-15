@@ -7,14 +7,14 @@ import (
 )
 
 type Book struct {
-	ID uuid.UUID
-	Title	string
-	ISBN	string
-	OpenLibraryID	string
-	CoverURL	string
-	CategoryID	*uuid.UUID
-	Stock	int32
-	Available	int32
-	CreatedAt	time.Time
-	UpdatedAt	time.Time
+	ID            uuid.UUID
+	Title         string
+	ISBN          string
+	OpenLibraryID string
+	CoverURL      string
+	CategoryID    *uuid.UUID
+	Stock         int32
+	Available     int32
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }

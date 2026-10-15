@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/azrilpramudia/libre-go/internal/client/openlibrary"
 	"github.com/azrilpramudia/libre-go/internal/handler"
 	"github.com/azrilpramudia/libre-go/internal/repository/postgres"
 	"github.com/azrilpramudia/libre-go/internal/repository/postgres/sqlc"
@@ -26,7 +27,8 @@ func main() {
 	queries := sqlc.New(pool)
 	bookRepo := postgres.NewBookRepository(queries)
 	bookService := service.NewBookRepository(bookRepo)
-	bookHandler := handler.NewBookHandler(bookService)
+	olClient := openlibrary.NewClient(os.Getenv("OPENLIBRARY_BASE_URL"))
+	bookHandler := handler.NewBookHandler(bookService, olClient)
 
 	r := gin.Default()
 	r.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"status": "ok"}) })
@@ -36,6 +38,7 @@ func main() {
 		books.POST("", bookHandler.Create)
 		books.GET("", bookHandler.List)
 		books.GET("/:id", bookHandler.GetByID)
+		books.GET("/search/openlibrary", bookHandler.SearchOpenLibrary)
 	}
 
 	log.Println("server running on :5000")
