@@ -12,4 +12,5 @@ type Repository interface {
 	List(ctx context.Context, limit, offset int32) ([]*Book, error)
 	Update(ctx context.Context, b *Book) (*Book, error)
 	Delete(ctx context.Context, id uuid.UUID) error
+	LinkAuthor(ctx context.Context, bookID, authorID uuid.UUID) error
 }
