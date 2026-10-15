@@ -7,8 +7,6 @@ services:
     depends_on:
       - postgres
       - redis
-    volumes:
-      - .:/app
 
   postgres:
     image: postgres:16-alpine
