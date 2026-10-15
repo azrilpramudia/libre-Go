@@ -16,6 +16,15 @@ type BookHandler struct {
 	olClient *openlibrary.Client
 }
 
+type importBookRequest struct {
+	Title      string `json:"title" binding:"required"`
+	AuthorName string `json:"author_name"`
+	ISBN       string `json:"isbn"`
+	CoverID    int    `json:"cover_i"`
+	OLKey      string `json:"key" binding:"required"`
+	Stock      int32  `json:"stock"`
+}
+
 func NewBookHandler(svc *service.BookService, olClient *openlibrary.Client) *BookHandler {
 	return &BookHandler{svc: svc, olClient: olClient}
 }
@@ -84,4 +93,29 @@ func (h *BookHandler) SearchOpenLibrary(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, result)
+}
+
+func (h *BookHandler) ImportFromOpenLibrary(c *gin.Context) {
+	var req importBookRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if req.Stock < 1 {
+		req.Stock = 1
+	}
+
+	b, err := h.svc.ImportBook(c.Request.Context(), service.ImportBookInput{
+		Title:         req.Title,
+		AuthorName:    req.AuthorName,
+		ISBN:          req.ISBN,
+		CoverURL:      openlibrary.CoverURL(req.CoverID),
+		OpenLibraryID: req.OLKey,
+		Stock:         req.Stock,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, b)
 }

@@ -26,7 +26,8 @@ func main() {
 
 	queries := sqlc.New(pool)
 	bookRepo := postgres.NewBookRepository(queries)
-	bookService := service.NewBookRepository(bookRepo)
+	authorRepo := postgres.NewAuthorRepository(queries)
+	bookService := service.NewBookService(bookRepo, authorRepo)
 	olClient := openlibrary.NewClient(os.Getenv("OPENLIBRARY_BASE_URL"))
 	bookHandler := handler.NewBookHandler(bookService, olClient)
 
@@ -39,6 +40,7 @@ func main() {
 		books.GET("", bookHandler.List)
 		books.GET("/:id", bookHandler.GetByID)
 		books.GET("/search/openlibrary", bookHandler.SearchOpenLibrary)
+		books.POST("/import/openlibrary", bookHandler.ImportFromOpenLibrary)
 	}
 
 	log.Println("server running on :5000")

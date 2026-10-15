@@ -19,10 +19,12 @@ func NewBookRepository(q *sqlc.Queries) book.Repository {
 
 func (r *bookRepo) Create(ctx context.Context, b *book.Book) (*book.Book, error) {
 	row, err := r.q.CreateBook(ctx, sqlc.CreateBookParams{
-		Title:     b.Title,
-		Isbn:      pgtype.Text{String: b.ISBN, Valid: b.ISBN != ""},
-		Stock:     b.Stock,
-		Available: b.Stock,
+		Title:         b.Title,
+		Isbn:          pgtype.Text{String: b.ISBN, Valid: b.ISBN != ""},
+		OpenlibraryID: pgtype.Text{String: b.OpenLibraryID, Valid: b.OpenLibraryID != ""},
+		CoverUrl:      pgtype.Text{String: b.CoverURL, Valid: b.CoverURL != ""},
+		Stock:         b.Stock,
+		Available:     b.Stock,
 	})
 	if err != nil {
 		return nil, err
@@ -56,6 +58,13 @@ func (r *bookRepo) Update(ctx context.Context, b *book.Book) (*book.Book, error)
 
 func (r *bookRepo) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.q.DeleteBook(ctx, pgtype.UUID{Bytes: id, Valid: true})
+}
+
+func (r *bookRepo) LinkAuthor(ctx context.Context, bookID, authorID uuid.UUID) error {
+	return r.q.LinkBookAuthor(ctx, sqlc.LinkBookAuthorParams{
+		BookID:   pgtype.UUID{Bytes: bookID, Valid: true},
+		AuthorID: pgtype.UUID{Bytes: authorID, Valid: true},
+	})
 }
 
 func toDomainBook(row sqlc.Book) *book.Book {
