@@ -4,9 +4,11 @@ import (
 	"context"
 	"log"
 	"os"
+	"time"
 
 	"github.com/azrilpramudia/libre-go/internal/client/openlibrary"
 	"github.com/azrilpramudia/libre-go/internal/handler"
+	"github.com/azrilpramudia/libre-go/internal/middleware"
 	"github.com/azrilpramudia/libre-go/internal/repository/postgres"
 	"github.com/azrilpramudia/libre-go/internal/repository/postgres/sqlc"
 	"github.com/azrilpramudia/libre-go/internal/repository/redis"
@@ -39,7 +41,11 @@ func main() {
 	loanService := service.NewLoanService(loanRepo)
 	loanHandler := handler.NewLoanHandler(loanService)
 
-	r := gin.Default()
+	r := gin.New()
+	r.SetTrustedProxies(nil)
+	r.Use(middleware.Logger())
+	r.Use(middleware.Recovery())
+	r.Use(middleware.Timeout(5 * time.Second))
 	r.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"status": "ok"}) })
 
 	books := r.Group("/books")
