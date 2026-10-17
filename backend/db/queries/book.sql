@@ -17,3 +17,13 @@ RETURNING *;
 
 -- name: DeleteBook :exec
 DELETE FROM books WHERE id = $1;
+
+-- name: DecrementBookAvailable :one
+UPDATE books SET available = available - 1, updated_at = now()
+WHERE id = $1 AND available > 0
+RETURNING *;
+
+-- name: IncrementBookAvailable :one
+UPDATE books SET available = available + 1, updated_at = now()
+WHERE id = $1
+RETURNING *;

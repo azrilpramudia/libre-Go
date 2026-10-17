@@ -33,6 +33,9 @@ func main() {
 	memberRepo := postgres.NewMemberRepository(queries)
 	memberService := service.NewMemberService(memberRepo)
 	memberHandler := handler.NewMemberHandler(memberService)
+	loanRepo := postgres.NewLoanRepository(pool, queries)
+	loanService := service.NewLoanService(loanRepo)
+	loanHandler := handler.NewLoanHandler(loanService)
 
 	r := gin.Default()
 	r.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"status": "ok"}) })
@@ -51,6 +54,13 @@ func main() {
 		members.POST("", memberHandler.Create)
 		members.GET("", memberHandler.List)
 		members.GET("/:id", memberHandler.GetByID)
+	}
+
+	loans := r.Group("/loans")
+	{
+		loans.POST("/borrow", loanHandler.Borrow)
+		loans.PATCH("/:id/return", loanHandler.Return)
+		loans.GET("/member/:memberId", loanHandler.ListByMember)
 	}
 
 	log.Println("server running on :5000")
