@@ -1,0 +1,2 @@
+ALTER TABLE loans ALTER COLUMN fine_amount TYPE NUMERIC(10,2) USING fine_amount::NUMERIC(10,2);
+ALTER TABLE loans ALTER COLUMN fine_amount SET DEFAULT 0;

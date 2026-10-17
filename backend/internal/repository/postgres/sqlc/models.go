@@ -47,7 +47,7 @@ type Loan struct {
 	DueAt      pgtype.Timestamptz `json:"due_at"`
 	ReturnedAt pgtype.Timestamptz `json:"returned_at"`
 	Status     string             `json:"status"`
-	FineAmount pgtype.Numeric     `json:"fine_amount"`
+	FineAmount int32              `json:"fine_amount"`
 }
 
 type Member struct {

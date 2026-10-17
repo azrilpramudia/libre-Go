@@ -53,6 +53,30 @@ func (q *Queries) CreateBook(ctx context.Context, arg CreateBookParams) (Book, e
 	return i, err
 }
 
+const decrementBookAvailable = `-- name: DecrementBookAvailable :one
+UPDATE books SET available = available - 1, updated_at = now()
+WHERE id = $1 AND available > 0
+RETURNING id, title, isbn, openlibrary_id, cover_url, category_id, stock, available, created_at, updated_at
+`
+
+func (q *Queries) DecrementBookAvailable(ctx context.Context, id pgtype.UUID) (Book, error) {
+	row := q.db.QueryRow(ctx, decrementBookAvailable, id)
+	var i Book
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Isbn,
+		&i.OpenlibraryID,
+		&i.CoverUrl,
+		&i.CategoryID,
+		&i.Stock,
+		&i.Available,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const deleteBook = `-- name: DeleteBook :exec
 DELETE FROM books WHERE id = $1
 `
@@ -68,6 +92,30 @@ SELECT id, title, isbn, openlibrary_id, cover_url, category_id, stock, available
 
 func (q *Queries) GetBookByID(ctx context.Context, id pgtype.UUID) (Book, error) {
 	row := q.db.QueryRow(ctx, getBookByID, id)
+	var i Book
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Isbn,
+		&i.OpenlibraryID,
+		&i.CoverUrl,
+		&i.CategoryID,
+		&i.Stock,
+		&i.Available,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const incrementBookAvailable = `-- name: IncrementBookAvailable :one
+UPDATE books SET available = available + 1, updated_at = now()
+WHERE id = $1
+RETURNING id, title, isbn, openlibrary_id, cover_url, category_id, stock, available, created_at, updated_at
+`
+
+func (q *Queries) IncrementBookAvailable(ctx context.Context, id pgtype.UUID) (Book, error) {
+	row := q.db.QueryRow(ctx, incrementBookAvailable, id)
 	var i Book
 	err := row.Scan(
 		&i.ID,

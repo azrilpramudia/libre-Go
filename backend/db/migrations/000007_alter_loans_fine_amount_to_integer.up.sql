@@ -1,0 +1,2 @@
+ALTER TABLE loans ALTER COLUMN fine_amount TYPE INTEGER USING fine_amount::INTEGER;
+ALTER TABLE loans ALTER COLUMN fine_amount SET DEFAULT 0;
