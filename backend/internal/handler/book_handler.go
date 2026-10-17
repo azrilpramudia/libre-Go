@@ -3,12 +3,14 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/azrilpramudia/libre-go/internal/client/openlibrary"
 	"github.com/azrilpramudia/libre-go/internal/domain/book"
 	"github.com/azrilpramudia/libre-go/internal/repository/redis"
 	"github.com/azrilpramudia/libre-go/internal/service"
+	"github.com/azrilpramudia/libre-go/pkg/response"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -17,15 +19,6 @@ type BookHandler struct {
 	svc      *service.BookService
 	olClient *openlibrary.Client
 	cache    *redis.Cache
-}
-
-type importBookRequest struct {
-	Title      string `json:"title" binding:"required"`
-	AuthorName string `json:"author_name"`
-	ISBN       string `json:"isbn"`
-	CoverID    int    `json:"cover_i"`
-	OLKey      string `json:"key" binding:"required"`
-	Stock      int32  `json:"stock"`
 }
 
 func NewBookHandler(svc *service.BookService, olClient *openlibrary.Client, cache *redis.Cache) *BookHandler {
@@ -41,7 +34,7 @@ type createBookRequest struct {
 func (h *BookHandler) Create(c *gin.Context) {
 	var req createBookRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, response.Error(err.Error()))
 		return
 	}
 
@@ -51,10 +44,10 @@ func (h *BookHandler) Create(c *gin.Context) {
 		Stock: req.Stock,
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, response.Error(err.Error()))
 		return
 	}
-	c.JSON(http.StatusCreated, b)
+	c.JSON(http.StatusCreated, response.Success(b))
 }
 
 func (h *BookHandler) List(c *gin.Context) {
@@ -63,57 +56,66 @@ func (h *BookHandler) List(c *gin.Context) {
 
 	books, err := h.svc.ListBooks(c.Request.Context(), int32(limit), int32(offset))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, response.Error(err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, books)
+	c.JSON(http.StatusOK, response.Success(books))
 }
 
 func (h *BookHandler) GetByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		c.JSON(http.StatusBadRequest, response.Error("invalid id"))
 		return
 	}
 	b, err := h.svc.GetBook(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "book not found"})
+		c.JSON(http.StatusNotFound, response.Error("book not found"))
 		return
 	}
-	c.JSON(http.StatusOK, b)
+	c.JSON(http.StatusOK, response.Success(b))
 }
 
 func (h *BookHandler) SearchOpenLibrary(c *gin.Context) {
 	title := c.Query("title")
 	if title == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "title query param required"})
+		c.JSON(http.StatusBadRequest, response.Error("title query param required"))
 		return
 	}
 
-	cacheKey := "ol:search:" + title
+	cacheKey := "ol:search:" + strings.ToLower(title)
 
 	var cached openlibrary.SearchResult
 	hit, err := h.cache.Get(c.Request.Context(), cacheKey, &cached)
 	if err == nil && hit {
-		c.JSON(http.StatusOK, cached)
+		c.JSON(http.StatusOK, response.Success(cached))
 		return
 	}
 
 	result, err := h.olClient.SearchByTitle(c.Request.Context(), title)
 	if err != nil {
-		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadGateway, response.Error(err.Error()))
 		return
 	}
 
 	_ = h.cache.Set(c.Request.Context(), cacheKey, result, time.Hour)
 
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, response.Success(result))
+}
+
+type importBookRequest struct {
+	Title      string `json:"title" binding:"required"`
+	AuthorName string `json:"author_name"`
+	ISBN       string `json:"isbn"`
+	CoverID    int    `json:"cover_i"`
+	OLKey      string `json:"key" binding:"required"`
+	Stock      int32  `json:"stock"`
 }
 
 func (h *BookHandler) ImportFromOpenLibrary(c *gin.Context) {
 	var req importBookRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, response.Error(err.Error()))
 		return
 	}
 	if req.Stock < 1 {
@@ -129,8 +131,8 @@ func (h *BookHandler) ImportFromOpenLibrary(c *gin.Context) {
 		Stock:         req.Stock,
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, response.Error(err.Error()))
 		return
 	}
-	c.JSON(http.StatusCreated, b)
+	c.JSON(http.StatusCreated, response.Success(b))
 }

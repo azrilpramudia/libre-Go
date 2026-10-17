@@ -6,6 +6,7 @@ import (
 
 	"github.com/azrilpramudia/libre-go/internal/domain/member"
 	"github.com/azrilpramudia/libre-go/internal/service"
+	"github.com/azrilpramudia/libre-go/pkg/response"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -27,7 +28,7 @@ type createMemberRequest struct {
 func (h *MemberHandler) Create(c *gin.Context) {
 	var req createMemberRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, response.Error(err.Error()))
 		return
 	}
 
@@ -37,10 +38,10 @@ func (h *MemberHandler) Create(c *gin.Context) {
 		Phone:    req.Phone,
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, response.Error(err.Error()))
 		return
 	}
-	c.JSON(http.StatusCreated, m)
+	c.JSON(http.StatusCreated, response.Success(m))
 }
 
 func (h *MemberHandler) List(c *gin.Context) {
@@ -49,22 +50,22 @@ func (h *MemberHandler) List(c *gin.Context) {
 
 	members, err := h.svc.ListMembers(c.Request.Context(), int32(limit), int32(offset))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, response.Error(err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, members)
+	c.JSON(http.StatusOK, response.Success(members))
 }
 
 func (h *MemberHandler) GetByID(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		c.JSON(http.StatusBadRequest, response.Error("invalid id"))
 		return
 	}
 	m, err := h.svc.GetMember(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "member not found"})
+		c.JSON(http.StatusNotFound, response.Error("member not found"))
 		return
 	}
-	c.JSON(http.StatusOK, m)
+	c.JSON(http.StatusOK, response.Success(m))
 }

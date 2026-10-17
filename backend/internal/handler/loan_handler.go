@@ -6,6 +6,7 @@ import (
 
 	"github.com/azrilpramudia/libre-go/internal/domain/loan"
 	"github.com/azrilpramudia/libre-go/internal/service"
+	"github.com/azrilpramudia/libre-go/pkg/response"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -26,59 +27,59 @@ type borrowRequest struct {
 func (h *LoanHandler) Borrow(c *gin.Context) {
 	var req borrowRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, response.Error(err.Error()))
 		return
 	}
 
 	bookID, err := uuid.Parse(req.BookID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid book_id"})
+		c.JSON(http.StatusBadRequest, response.Error("invalid book_id"))
 		return
 	}
 	memberID, err := uuid.Parse(req.MemberID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid member_id"})
+		c.JSON(http.StatusBadRequest, response.Error("invalid member_id"))
 		return
 	}
 
 	l, err := h.svc.BorrowBook(c.Request.Context(), bookID, memberID)
 	if errors.Is(err, loan.ErrBookNotAvailable) {
-		c.JSON(http.StatusConflict, gin.H{"error": "book not available"})
+		c.JSON(http.StatusConflict, response.Error("book not available"))
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, response.Error(err.Error()))
 		return
 	}
-	c.JSON(http.StatusCreated, l)
+	c.JSON(http.StatusCreated, response.Success(l))
 }
 
 func (h *LoanHandler) Return(c *gin.Context) {
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		c.JSON(http.StatusBadRequest, response.Error("invalid id"))
 		return
 	}
 
 	l, err := h.svc.ReturnBook(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, response.Error(err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, l)
+	c.JSON(http.StatusOK, response.Success(l))
 }
 
 func (h *LoanHandler) ListByMember(c *gin.Context) {
 	memberID, err := uuid.Parse(c.Param("memberId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid member id"})
+		c.JSON(http.StatusBadRequest, response.Error("invalid member id"))
 		return
 	}
 
 	loans, err := h.svc.ListMemberLoans(c.Request.Context(), memberID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, response.Error(err.Error()))
 		return
 	}
-	c.JSON(http.StatusOK, loans)
+	c.JSON(http.StatusOK, response.Success(loans))
 }
