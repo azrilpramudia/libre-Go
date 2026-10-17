@@ -51,9 +51,10 @@ type Loan struct {
 }
 
 type Member struct {
-	ID        pgtype.UUID        `json:"id"`
-	FullName  string             `json:"full_name"`
-	Email     string             `json:"email"`
-	Phone     pgtype.Text        `json:"phone"`
-	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	ID           pgtype.UUID        `json:"id"`
+	FullName     string             `json:"full_name"`
+	Email        string             `json:"email"`
+	Phone        pgtype.Text        `json:"phone"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	PasswordHash string             `json:"password_hash"`
 }

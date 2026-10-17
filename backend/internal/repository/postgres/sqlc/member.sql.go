@@ -12,19 +12,25 @@ import (
 )
 
 const createMember = `-- name: CreateMember :one
-INSERT INTO members (full_name, email, phone)
-VALUES ($1, $2, $3)
-RETURNING id, full_name, email, phone, created_at
+INSERT INTO members (full_name, email, phone, password_hash)
+VALUES ($1, $2, $3, $4)
+RETURNING id, full_name, email, phone, created_at, password_hash
 `
 
 type CreateMemberParams struct {
-	FullName string      `json:"full_name"`
-	Email    string      `json:"email"`
-	Phone    pgtype.Text `json:"phone"`
+	FullName     string      `json:"full_name"`
+	Email        string      `json:"email"`
+	Phone        pgtype.Text `json:"phone"`
+	PasswordHash string      `json:"password_hash"`
 }
 
 func (q *Queries) CreateMember(ctx context.Context, arg CreateMemberParams) (Member, error) {
-	row := q.db.QueryRow(ctx, createMember, arg.FullName, arg.Email, arg.Phone)
+	row := q.db.QueryRow(ctx, createMember,
+		arg.FullName,
+		arg.Email,
+		arg.Phone,
+		arg.PasswordHash,
+	)
 	var i Member
 	err := row.Scan(
 		&i.ID,
@@ -32,12 +38,31 @@ func (q *Queries) CreateMember(ctx context.Context, arg CreateMemberParams) (Mem
 		&i.Email,
 		&i.Phone,
 		&i.CreatedAt,
+		&i.PasswordHash,
+	)
+	return i, err
+}
+
+const getMemberByEmail = `-- name: GetMemberByEmail :one
+SELECT id, full_name, email, phone, created_at, password_hash FROM members WHERE email = $1
+`
+
+func (q *Queries) GetMemberByEmail(ctx context.Context, email string) (Member, error) {
+	row := q.db.QueryRow(ctx, getMemberByEmail, email)
+	var i Member
+	err := row.Scan(
+		&i.ID,
+		&i.FullName,
+		&i.Email,
+		&i.Phone,
+		&i.CreatedAt,
+		&i.PasswordHash,
 	)
 	return i, err
 }
 
 const getMemberByID = `-- name: GetMemberByID :one
-SELECT id, full_name, email, phone, created_at FROM members WHERE id = $1
+SELECT id, full_name, email, phone, created_at, password_hash FROM members WHERE id = $1
 `
 
 func (q *Queries) GetMemberByID(ctx context.Context, id pgtype.UUID) (Member, error) {
@@ -49,12 +74,13 @@ func (q *Queries) GetMemberByID(ctx context.Context, id pgtype.UUID) (Member, er
 		&i.Email,
 		&i.Phone,
 		&i.CreatedAt,
+		&i.PasswordHash,
 	)
 	return i, err
 }
 
 const listMembers = `-- name: ListMembers :many
-SELECT id, full_name, email, phone, created_at FROM members ORDER BY created_at DESC LIMIT $1 OFFSET $2
+SELECT id, full_name, email, phone, created_at, password_hash FROM members ORDER BY created_at DESC LIMIT $1 OFFSET $2
 `
 
 type ListMembersParams struct {
@@ -77,6 +103,7 @@ func (q *Queries) ListMembers(ctx context.Context, arg ListMembersParams) ([]Mem
 			&i.Email,
 			&i.Phone,
 			&i.CreatedAt,
+			&i.PasswordHash,
 		); err != nil {
 			return nil, err
 		}

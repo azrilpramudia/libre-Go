@@ -74,6 +74,9 @@ func (r *loanRepo) Return(ctx context.Context, loanID uuid.UUID) (*loan.Loan, er
 		ID:         pgtype.UUID{Bytes: loanID, Valid: true},
 		FineAmount: int32(fine),
 	})
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, loan.ErrLoanAlreadyReturned
+	}
 	if err != nil {
 		return nil, err
 	}

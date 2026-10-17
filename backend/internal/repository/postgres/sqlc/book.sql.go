@@ -109,7 +109,7 @@ func (q *Queries) GetBookByID(ctx context.Context, id pgtype.UUID) (Book, error)
 }
 
 const incrementBookAvailable = `-- name: IncrementBookAvailable :one
-UPDATE books SET available = available + 1, updated_at = now()
+UPDATE books SET available = LEAST(available + 1, stock), updated_at = now()
 WHERE id = $1
 RETURNING id, title, isbn, openlibrary_id, cover_url, category_id, stock, available, created_at, updated_at
 `

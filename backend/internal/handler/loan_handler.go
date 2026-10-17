@@ -62,6 +62,10 @@ func (h *LoanHandler) Return(c *gin.Context) {
 	}
 
 	l, err := h.svc.ReturnBook(c.Request.Context(), id)
+	if errors.Is(err, loan.ErrLoanAlreadyReturned) {
+		c.JSON(http.StatusConflict, response.Error("loan already returned"))
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.Error(err.Error()))
 		return
