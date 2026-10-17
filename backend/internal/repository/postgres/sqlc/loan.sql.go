@@ -95,7 +95,7 @@ func (q *Queries) ListLoansByMember(ctx context.Context, memberID pgtype.UUID) (
 const returnLoan = `-- name: ReturnLoan :one
 UPDATE loans
 SET returned_at = now(), status = 'returned', fine_amount = $2
-WHERE id = $1
+WHERE id = $1 AND status = 'borrowed'
 RETURNING id, book_id, member_id, borrowed_at, due_at, returned_at, status, fine_amount
 `
 

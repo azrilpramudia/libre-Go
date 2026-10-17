@@ -40,6 +40,8 @@ func main() {
 	loanRepo := postgres.NewLoanRepository(pool, queries)
 	loanService := service.NewLoanService(loanRepo)
 	loanHandler := handler.NewLoanHandler(loanService)
+	authService := service.NewAuthService(memberRepo)
+	authHandler := handler.NewAuthHandler(authService)
 
 	r := gin.New()
 	r.SetTrustedProxies(nil)
@@ -47,6 +49,9 @@ func main() {
 	r.Use(middleware.Recovery())
 	r.Use(middleware.Timeout(5 * time.Second))
 	r.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"status": "ok"}) })
+
+	r.POST("/auth/register", authHandler.Register)
+	r.POST("/auth/login", authHandler.Login)
 
 	books := r.Group("/books")
 	{
@@ -65,6 +70,7 @@ func main() {
 	}
 
 	loans := r.Group("/loans")
+	loans.Use(middleware.AuthRequired())
 	{
 		loans.POST("/borrow", loanHandler.Borrow)
 		loans.PATCH("/:id/return", loanHandler.Return)

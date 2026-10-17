@@ -7,9 +7,10 @@ import (
 )
 
 type Member struct {
-	ID        uuid.UUID
-	FullName  string
-	Email     string
-	Phone     string
-	CreatedAt time.Time
+	ID           uuid.UUID
+	FullName     string
+	Email        string
+	Phone        string
+	PasswordHash string
+	CreatedAt    time.Time
 }

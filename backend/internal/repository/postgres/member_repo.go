@@ -19,9 +19,10 @@ func NewMemberRepository(q *sqlc.Queries) member.Repository {
 
 func (r *memberRepo) Create(ctx context.Context, m *member.Member) (*member.Member, error) {
 	row, err := r.q.CreateMember(ctx, sqlc.CreateMemberParams{
-		FullName: m.FullName,
-		Email:    m.Email,
-		Phone:    pgtype.Text{String: m.Phone, Valid: m.Phone != ""},
+		FullName:     m.FullName,
+		Email:        m.Email,
+		Phone:        pgtype.Text{String: m.Phone, Valid: m.Phone != ""},
+		PasswordHash: m.PasswordHash,
 	})
 	if err != nil {
 		return nil, err
@@ -31,6 +32,14 @@ func (r *memberRepo) Create(ctx context.Context, m *member.Member) (*member.Memb
 
 func (r *memberRepo) GetByID(ctx context.Context, id uuid.UUID) (*member.Member, error) {
 	row, err := r.q.GetMemberByID(ctx, pgtype.UUID{Bytes: id, Valid: true})
+	if err != nil {
+		return nil, err
+	}
+	return toDomainMember(row), nil
+}
+
+func (r *memberRepo) GetByEmail(ctx context.Context, email string) (*member.Member, error) {
+	row, err := r.q.GetMemberByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}
@@ -51,10 +60,11 @@ func (r *memberRepo) List(ctx context.Context, limit, offset int32) ([]*member.M
 
 func toDomainMember(row sqlc.Member) *member.Member {
 	return &member.Member{
-		ID:        row.ID.Bytes,
-		FullName:  row.FullName,
-		Email:     row.Email,
-		Phone:     row.Phone.String,
-		CreatedAt: row.CreatedAt.Time,
+		ID:           row.ID.Bytes,
+		FullName:     row.FullName,
+		Email:        row.Email,
+		Phone:        row.Phone.String,
+		PasswordHash: row.PasswordHash,
+		CreatedAt:    row.CreatedAt.Time,
 	}
 }

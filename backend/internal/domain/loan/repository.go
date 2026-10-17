@@ -9,7 +9,8 @@ import (
 )
 
 var (
-	ErrBookNotAvailable = errors.New("book not available")
+	ErrBookNotAvailable    = errors.New("book not available")
+	ErrLoanAlreadyReturned = errors.New("loan already returned")
 )
 
 type Repository interface {

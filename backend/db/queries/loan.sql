@@ -9,7 +9,7 @@ SELECT * FROM loans WHERE id = $1;
 -- name: ReturnLoan :one
 UPDATE loans
 SET returned_at = now(), status = 'returned', fine_amount = $2
-WHERE id = $1
+WHERE id = $1 AND status = 'borrowed'
 RETURNING *;
 
 -- name: ListLoansByMember :many

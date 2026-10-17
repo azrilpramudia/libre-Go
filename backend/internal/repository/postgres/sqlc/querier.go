@@ -20,6 +20,7 @@ type Querier interface {
 	GetAuthorByName(ctx context.Context, name string) (Author, error)
 	GetBookByID(ctx context.Context, id pgtype.UUID) (Book, error)
 	GetLoanByID(ctx context.Context, id pgtype.UUID) (Loan, error)
+	GetMemberByEmail(ctx context.Context, email string) (Member, error)
 	GetMemberByID(ctx context.Context, id pgtype.UUID) (Member, error)
 	IncrementBookAvailable(ctx context.Context, id pgtype.UUID) (Book, error)
 	LinkBookAuthor(ctx context.Context, arg LinkBookAuthorParams) error
