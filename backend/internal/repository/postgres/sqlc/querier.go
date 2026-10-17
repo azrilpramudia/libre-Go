@@ -13,11 +13,14 @@ import (
 type Querier interface {
 	CreateAuthor(ctx context.Context, name string) (Author, error)
 	CreateBook(ctx context.Context, arg CreateBookParams) (Book, error)
+	CreateMember(ctx context.Context, arg CreateMemberParams) (Member, error)
 	DeleteBook(ctx context.Context, id pgtype.UUID) error
 	GetAuthorByName(ctx context.Context, name string) (Author, error)
 	GetBookByID(ctx context.Context, id pgtype.UUID) (Book, error)
+	GetMemberByID(ctx context.Context, id pgtype.UUID) (Member, error)
 	LinkBookAuthor(ctx context.Context, arg LinkBookAuthorParams) error
 	ListBooks(ctx context.Context, arg ListBooksParams) ([]Book, error)
+	ListMembers(ctx context.Context, arg ListMembersParams) ([]Member, error)
 	UpdateBook(ctx context.Context, arg UpdateBookParams) (Book, error)
 }
 

@@ -30,6 +30,9 @@ func main() {
 	bookService := service.NewBookService(bookRepo, authorRepo)
 	olClient := openlibrary.NewClient(os.Getenv("OPENLIBRARY_BASE_URL"))
 	bookHandler := handler.NewBookHandler(bookService, olClient)
+	memberRepo := postgres.NewMemberRepository(queries)
+	memberService := service.NewMemberService(memberRepo)
+	memberHandler := handler.NewMemberHandler(memberService)
 
 	r := gin.Default()
 	r.GET("/health", func(c *gin.Context) { c.JSON(200, gin.H{"status": "ok"}) })
@@ -41,6 +44,13 @@ func main() {
 		books.GET("/:id", bookHandler.GetByID)
 		books.GET("/search/openlibrary", bookHandler.SearchOpenLibrary)
 		books.POST("/import/openlibrary", bookHandler.ImportFromOpenLibrary)
+	}
+
+	members := r.Group("/members")
+	{
+		members.POST("", memberHandler.Create)
+		members.GET("", memberHandler.List)
+		members.GET("/:id", memberHandler.GetByID)
 	}
 
 	log.Println("server running on :5000")
