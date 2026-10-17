@@ -3,9 +3,11 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/azrilpramudia/libre-go/internal/client/openlibrary"
 	"github.com/azrilpramudia/libre-go/internal/domain/book"
+	"github.com/azrilpramudia/libre-go/internal/repository/redis"
 	"github.com/azrilpramudia/libre-go/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -14,6 +16,7 @@ import (
 type BookHandler struct {
 	svc      *service.BookService
 	olClient *openlibrary.Client
+	cache    *redis.Cache
 }
 
 type importBookRequest struct {
@@ -25,8 +28,8 @@ type importBookRequest struct {
 	Stock      int32  `json:"stock"`
 }
 
-func NewBookHandler(svc *service.BookService, olClient *openlibrary.Client) *BookHandler {
-	return &BookHandler{svc: svc, olClient: olClient}
+func NewBookHandler(svc *service.BookService, olClient *openlibrary.Client, cache *redis.Cache) *BookHandler {
+	return &BookHandler{svc: svc, olClient: olClient, cache: cache}
 }
 
 type createBookRequest struct {
@@ -87,11 +90,23 @@ func (h *BookHandler) SearchOpenLibrary(c *gin.Context) {
 		return
 	}
 
+	cacheKey := "ol:search:" + title
+
+	var cached openlibrary.SearchResult
+	hit, err := h.cache.Get(c.Request.Context(), cacheKey, &cached)
+	if err == nil && hit {
+		c.JSON(http.StatusOK, cached)
+		return
+	}
+
 	result, err := h.olClient.SearchByTitle(c.Request.Context(), title)
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 		return
 	}
+
+	_ = h.cache.Set(c.Request.Context(), cacheKey, result, time.Hour)
+
 	c.JSON(http.StatusOK, result)
 }
 

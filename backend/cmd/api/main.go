@@ -9,6 +9,7 @@ import (
 	"github.com/azrilpramudia/libre-go/internal/handler"
 	"github.com/azrilpramudia/libre-go/internal/repository/postgres"
 	"github.com/azrilpramudia/libre-go/internal/repository/postgres/sqlc"
+	"github.com/azrilpramudia/libre-go/internal/repository/redis"
 	"github.com/azrilpramudia/libre-go/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -29,7 +30,8 @@ func main() {
 	authorRepo := postgres.NewAuthorRepository(queries)
 	bookService := service.NewBookService(bookRepo, authorRepo)
 	olClient := openlibrary.NewClient(os.Getenv("OPENLIBRARY_BASE_URL"))
-	bookHandler := handler.NewBookHandler(bookService, olClient)
+	cache := redis.NewCache(os.Getenv("REDIS_ADDR"))
+	bookHandler := handler.NewBookHandler(bookService, olClient, cache)
 	memberRepo := postgres.NewMemberRepository(queries)
 	memberService := service.NewMemberService(memberRepo)
 	memberHandler := handler.NewMemberHandler(memberService)
