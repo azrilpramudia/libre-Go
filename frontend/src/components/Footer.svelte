@@ -26,9 +26,9 @@
       <div class="col-span-1 md:col-span-3 space-y-6">
         <h4 class="text-xl font-bold tracking-wide text-white drop-shadow-sm">Jelajahi</h4>
         <ul class="space-y-4 text-white/80 font-medium">
-          <li><a href="#" class="hover:text-white hover:translate-x-2 transition-all duration-300 inline-block">Koleksi Terbaru</a></li>
-          <li><a href="#" class="hover:text-white hover:translate-x-2 transition-all duration-300 inline-block">Cara Pinjam</a></li>
-          <li><a href="#" class="hover:text-white hover:translate-x-2 transition-all duration-300 inline-block">Leaderboard</a></li>
+          <li><button type="button" class="hover:text-white hover:translate-x-2 transition-all duration-300 inline-block bg-transparent border-none cursor-pointer p-0">Koleksi Terbaru</button></li>
+          <li><button type="button" class="hover:text-white hover:translate-x-2 transition-all duration-300 inline-block bg-transparent border-none cursor-pointer p-0">Cara Pinjam</button></li>
+          <li><button type="button" class="hover:text-white hover:translate-x-2 transition-all duration-300 inline-block bg-transparent border-none cursor-pointer p-0">Leaderboard</button></li>
         </ul>
       </div>
 
@@ -38,7 +38,7 @@
         <p class="text-white/80 font-medium text-sm leading-relaxed">
           Punya pertanyaan atau sekadar ingin diskusi buku bareng developer?
         </p>
-        <button class="w-full bg-white text-[#9B9AFF] hover:bg-[#f4f9f6] font-bold py-3.5 px-6 rounded-full shadow-lg transition transform hover:-translate-y-1 flex items-center justify-center gap-2">
+        <button type="button" class="w-full bg-white text-[#9B9AFF] hover:bg-[#f4f9f6] font-bold py-3.5 px-6 rounded-full shadow-lg transition transform hover:-translate-y-1 flex items-center justify-center gap-2">
           <span>💬</span> Gabung Discord Sekarang
         </button>
       </div>
@@ -48,8 +48,8 @@
     <div class="border-t border-white/30 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm font-medium text-white/70">
       <p>© 2026 PerpusFun. Dibuat menggunakan Svelte.</p>
       <div class="flex gap-6">
-        <a href="#" class="hover:text-white transition">Syarat & Ketentuan</a>
-        <a href="#" class="hover:text-white transition">Kebijakan Privasi</a>
+        <button type="button" class="hover:text-white transition bg-transparent border-none cursor-pointer p-0">Syarat & Ketentuan</button>
+        <button type="button" class="hover:text-white transition bg-transparent border-none cursor-pointer p-0">Kebijakan Privasi</button>
       </div>
     </div>
   </div>

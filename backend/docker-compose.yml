@@ -2,8 +2,11 @@ services:
   api:
     build: .
     ports:
-      - "8080:8080"
+      - "5000:5000"
     env_file: .env
+    environment:
+      DB_HOST: postgres
+      REDIS_ADDR: redis:6379
     depends_on:
       - postgres
       - redis
@@ -16,7 +19,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 

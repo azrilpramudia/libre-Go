@@ -1,11 +1,30 @@
 <script>
-  import { Link } from "svelte-routing";
+  import { Link, navigate } from "svelte-routing";
+  import { auth, authIsLoading } from "../lib/auth.js";
   // Mengimpor fungsi animasi dari Svelte
   import { fly, fade } from "svelte/transition";
   
-  let showPassword = false;
+  let showPassword = $state(false);
+  let nama = $state("");
+  let email = $state("");
+  let phone = $state("");
+  let password = $state("");
+  let errorMessage = $state("");
+  
   function togglePassword() {
     showPassword = !showPassword;
+  }
+
+  async function handleFormSubmit(e) {
+    e.preventDefault();
+    errorMessage = "";
+    try {
+      await auth.register(nama, email, phone, password);
+      await auth.login(email, password);
+      navigate("/dashboard");
+    } catch (error) {
+      errorMessage = error.data?.error || error.message || "Pendaftaran gagal.";
+    }
   }
 </script>
 
@@ -67,14 +86,19 @@
           </p>
         </div>
 
-        <form class="space-y-5" on:submit|preventDefault={() => console.log('Form disubmit!')}>
+        <form class="space-y-5" onsubmit={handleFormSubmit}>
+          {#if errorMessage}
+            <div role="alert" class="rounded-2xl bg-red-100 px-4 py-3 text-sm font-medium text-red-700">
+              {errorMessage}
+            </div>
+          {/if}
           
           <!-- Input Nama -->
           <div class="relative group" in:fly={{ y: 20, duration: 600, delay: 400 }}>
             <label class="block text-sm font-bold text-gray-700 mb-1.5 ml-1 transition-colors group-focus-within:text-[#9B9AFF]" for="nama">Nama Lengkap</label>
             <div class="relative">
               <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-[#9B9AFF] transition-colors group-hover:scale-110">👤</span>
-              <input type="text" id="nama" placeholder="Indra Suliwa" class="w-full pl-11 pr-5 py-3.5 rounded-2xl border-2 border-gray-100 bg-white focus:outline-none focus:ring-4 focus:ring-[#9B9AFF]/20 focus:border-[#9B9AFF] transition-all font-medium text-gray-700 hover:border-gray-200">
+              <input type="text" id="nama" bind:value={nama} required placeholder="Indra Suliwa" class="w-full pl-11 pr-5 py-3.5 rounded-2xl border-2 border-gray-100 bg-white focus:outline-none focus:ring-4 focus:ring-[#9B9AFF]/20 focus:border-[#9B9AFF] transition-all font-medium text-gray-700 hover:border-gray-200">
             </div>
           </div>
 
@@ -83,8 +107,13 @@
             <label class="block text-sm font-bold text-gray-700 mb-1.5 ml-1 transition-colors group-focus-within:text-[#9B9AFF]" for="email">Alamat Email</label>
             <div class="relative">
               <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-[#9B9AFF] transition-colors group-hover:scale-110">✉️</span>
-              <input type="email" id="email" placeholder="contoh@email.com" class="w-full pl-11 pr-5 py-3.5 rounded-2xl border-2 border-gray-100 bg-white focus:outline-none focus:ring-4 focus:ring-[#9B9AFF]/20 focus:border-[#9B9AFF] transition-all font-medium text-gray-700 hover:border-gray-200">
+              <input type="email" id="email" bind:value={email} required placeholder="contoh@email.com" class="w-full pl-11 pr-5 py-3.5 rounded-2xl border-2 border-gray-100 bg-white focus:outline-none focus:ring-4 focus:ring-[#9B9AFF]/20 focus:border-[#9B9AFF] transition-all font-medium text-gray-700 hover:border-gray-200">
             </div>
+          </div>
+
+          <div class="relative group" in:fly={{ y: 20, duration: 600, delay: 550 }}>
+            <label class="block text-sm font-bold text-gray-700 mb-1.5 ml-1" for="phone">No. Telepon (opsional)</label>
+            <input type="tel" id="phone" bind:value={phone} placeholder="08xxxxxxxxxx" class="w-full pl-5 pr-5 py-3.5 rounded-2xl border-2 border-gray-100 bg-white focus:outline-none focus:ring-4 focus:ring-[#9B9AFF]/20 focus:border-[#9B9AFF] transition-all font-medium text-gray-700 hover:border-gray-200">
           </div>
 
           <!-- Input Password -->
@@ -92,8 +121,8 @@
             <label class="block text-sm font-bold text-gray-700 mb-1.5 ml-1 transition-colors group-focus-within:text-[#9B9AFF]" for="password">Password</label>
             <div class="relative">
               <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-[#9B9AFF] transition-colors group-hover:scale-110">🔒</span>
-              <input type="{showPassword ? 'text' : 'password'}" id="password" placeholder="••••••••" class="w-full pl-11 pr-16 py-3.5 rounded-2xl border-2 border-gray-100 bg-white focus:outline-none focus:ring-4 focus:ring-[#9B9AFF]/20 focus:border-[#9B9AFF] transition-all font-medium text-gray-700 hover:border-gray-200">
-              <button type="button" on:click={togglePassword} class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#9B9AFF] focus:outline-none transition-transform hover:scale-105">
+              <input type="{showPassword ? 'text' : 'password'}" id="password" bind:value={password} required minlength="6" placeholder="••••••••" class="w-full pl-11 pr-16 py-3.5 rounded-2xl border-2 border-gray-100 bg-white focus:outline-none focus:ring-4 focus:ring-[#9B9AFF]/20 focus:border-[#9B9AFF] transition-all font-medium text-gray-700 hover:border-gray-200">
+              <button type="button" onclick={togglePassword} class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#9B9AFF] focus:outline-none transition-transform hover:scale-105">
                 {#if showPassword}
                   <span class="text-xs font-bold bg-[#9B9AFF]/10 text-[#9B9AFF] px-2 py-1 rounded-md">Tutup</span>
                 {:else}
@@ -107,14 +136,14 @@
           <div class="flex items-center gap-3 pt-2" in:fly={{ y: 20, duration: 600, delay: 700 }}>
             <input type="checkbox" id="terms" class="w-5 h-5 rounded border-2 border-gray-300 text-[#9B9AFF] focus:ring-[#9B9AFF] transition cursor-pointer">
             <label for="terms" class="text-sm text-gray-500 font-medium cursor-pointer hover:text-gray-700 transition">
-              Saya setuju dengan <a href="#" class="text-[#9B9AFF] hover:underline">Syarat & Ketentuan</a>
+              Saya setuju dengan <button type="button" class="text-[#9B9AFF] hover:underline">Syarat & Ketentuan</button>
             </label>
           </div>
 
           <!-- Tombol Submit -->
           <div in:fly={{ y: 20, duration: 600, delay: 800 }}>
-            <button type="submit" class="w-full mt-6 bg-[#9B9AFF] hover:bg-[#8382ff] text-white font-extrabold text-lg py-4 rounded-2xl shadow-[0_8px_20px_rgba(155,154,255,0.3)] hover:shadow-[0_12px_25px_rgba(155,154,255,0.5)] transition-all transform hover:-translate-y-1 active:translate-y-0 active:scale-95 flex justify-center items-center gap-2">
-              Daftar Sekarang 🚀
+            <button type="submit" disabled={$authIsLoading} class="w-full mt-6 bg-[#9B9AFF] hover:bg-[#8382ff] text-white font-extrabold text-lg py-4 rounded-2xl shadow-[0_8px_20px_rgba(155,154,255,0.3)] hover:shadow-[0_12px_25px_rgba(155,154,255,0.5)] transition-all transform hover:-translate-y-1 active:translate-y-0 active:scale-95 flex justify-center items-center gap-2 disabled:opacity-60">
+              {$authIsLoading ? "Mendaftarkan..." : "Daftar Sekarang 🚀"}
             </button>
           </div>
 

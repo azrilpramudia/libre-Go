@@ -11,6 +11,6 @@ type Member struct {
 	FullName     string
 	Email        string
 	Phone        string
-	PasswordHash string
+	PasswordHash string `json:"-"`
 	CreatedAt    time.Time
 }

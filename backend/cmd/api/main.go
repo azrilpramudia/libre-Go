@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/azrilpramudia/libre-go/config"
 	"github.com/azrilpramudia/libre-go/internal/client/openlibrary"
 	"github.com/azrilpramudia/libre-go/internal/handler"
 	"github.com/azrilpramudia/libre-go/internal/middleware"
@@ -13,6 +14,7 @@ import (
 	"github.com/azrilpramudia/libre-go/internal/repository/postgres/sqlc"
 	"github.com/azrilpramudia/libre-go/internal/repository/redis"
 	"github.com/azrilpramudia/libre-go/internal/service"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
@@ -21,7 +23,12 @@ import (
 func main() {
 	_ = godotenv.Load()
 
-	pool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	databaseURL, err := config.DatabaseURL()
+	if err != nil {
+		log.Fatalf("failed to configure database connection: %v", err)
+	}
+
+	pool, err := pgxpool.New(context.Background(), databaseURL)
 	if err != nil {
 		log.Fatalf("failed to connect database: %v", err)
 	}
@@ -45,6 +52,17 @@ func main() {
 
 	r := gin.New()
 	r.SetTrustedProxies(nil)
+
+	// CORS middleware
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: false,
+		MaxAge:           12 * time.Hour,
+	}))
+
 	r.Use(middleware.Logger())
 	r.Use(middleware.Recovery())
 	r.Use(middleware.Timeout(5 * time.Second))
