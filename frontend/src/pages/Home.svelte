@@ -1,16 +1,17 @@
 <script>
-  import { onMount } from "svelte";
   import { Link } from "svelte-routing";
   import BookCard from "../components/BookCard.svelte";
   import BookModal from '../components/BookModal.svelte';
   import Footer from '../components/Footer.svelte';
+  import Navbar from "../components/Navbar.svelte";
   import { booksAPI } from "../lib/api.js";
   import { currentMember, isAuthenticated } from "../lib/auth.js";
 
   let bukuPopuler = $state([]);
   let searchQuery = $state("");
-  let isLoadingBooks = $state(true);
+  let isLoadingBooks = $state(false);
   let booksError = $state("");
+  let isAuth = $derived($isAuthenticated);
   let filteredBuku = $derived(
     bukuPopuler.filter((buku) =>
       buku.title?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -19,7 +20,16 @@
   let showModal = $state(false);
   let selectedBuku = $state(null);
 
-  onMount(loadBooks);
+  $effect(() => {
+    if (isAuth) {
+      loadBooks();
+    } else {
+      bukuPopuler = [];
+      searchQuery = "";
+      booksError = "";
+      isLoadingBooks = false;
+    }
+  });
 
   async function loadBooks() {
     isLoadingBooks = true;
@@ -48,49 +58,60 @@
 
   <div class="relative z-10 max-w-7xl mx-auto px-6 py-6 w-full flex-grow flex flex-col">
     
-    <!-- Navbar -->
-    <nav class="flex flex-wrap justify-between items-center mb-16 bg-white/70 backdrop-blur-md px-6 py-4 rounded-full border border-gray-100 shadow-sm">
-      <div class="flex items-center gap-2">
-        <div class="text-3xl">📚</div>
-        <span class="text-xl font-extrabold text-[#9B9AFF] tracking-wide">PerpusFun</span>
-      </div>
+    <Navbar bind:searchQuery />
 
-      <div class="hidden lg:flex gap-8 text-sm font-semibold text-gray-600">
-        <Link to="/"><span class="hover:text-[#9B9AFF] transition cursor-pointer">Home</span></Link>
-        <Link to="/tentang"><span class="hover:text-[#9B9AFF] transition cursor-pointer">Tentang</span></Link>
-        <Link to="/keunggulan"><span class="hover:text-[#9B9AFF] transition cursor-pointer">Keunggulan</span></Link>
-        <Link to="/koleksi"><span class="hover:text-[#9B9AFF] transition cursor-pointer">Koleksi Buku</span></Link>
-      </div>
+    {#if isAuth}
+      <section class="mb-12 rounded-3xl border border-white/50 bg-white/60 p-8 shadow-sm backdrop-blur-lg">
+        <p class="text-sm font-bold uppercase tracking-wide text-[#9B9AFF]">Dashboard Pengguna</p>
+        <h1 class="mt-2 text-3xl font-extrabold text-gray-800">
+          Selamat datang, {$currentMember?.full_name || "Member"}! 👋
+        </h1>
+        <p class="mt-2 text-gray-600">Temukan buku berikutnya untuk dibaca.</p>
+      </section>
 
-      <div class="flex items-center gap-4">
-        <!-- Search Bar di dalam Navbar -->
-        <div class="relative hidden md:block w-48 lg:w-64">
-          <input
-            type="text"
-            bind:value={searchQuery}
-            placeholder="Cari buku..."
-            class="w-full pl-5 pr-10 py-2.5 rounded-full border border-gray-200 bg-gray-50 focus:outline-none focus:border-[#9B9AFF] text-sm text-gray-700 transition"
-          />
-          <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+      <section class="w-full pb-16">
+        <div class="mb-8 flex flex-col gap-4 border-b border-gray-200 pb-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 class="text-3xl font-extrabold text-gray-800">
+              Jelajahi <span class="bg-gradient-to-r from-[#9B9AFF] to-[#60c4ff] bg-clip-text text-transparent">Koleksi</span>
+            </h2>
+            <p class="mt-2 text-sm font-medium text-gray-500">Temukan buku-buku menarik untuk dibaca hari ini.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            {#if searchQuery.trim()}
+              <span class="rounded-full bg-[#DFFCE2] px-4 py-2 text-sm font-bold text-green-700">
+                Hasil untuk: "{searchQuery}"
+              </span>
+            {/if}
+            <Link to="/koleksi" class="text-sm font-bold text-[#8382ff] hover:underline">
+              Lihat semua buku →
+            </Link>
+          </div>
         </div>
 
-        {#if $isAuthenticated}
-          <Link to="/dashboard">
-            <span class="text-sm font-bold text-gray-700 hover:text-[#9B9AFF] transition cursor-pointer">
-              Hi, {$currentMember?.full_name?.split(" ")[0] || "Member"}
-            </span>
-          </Link>
-        {:else}
-          <Link to="/login">
-            <span class="text-sm font-bold text-gray-700 hover:text-[#9B9AFF] transition cursor-pointer">
-              Login
-            </span>
-          </Link>
-        {/if}
-      </div>
-    </nav>
-    
-
+        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          {#if isLoadingBooks}
+            <p class="col-span-full py-12 text-center text-gray-500">Memuat koleksi buku...</p>
+          {:else if booksError}
+            <div role="alert" class="col-span-full rounded-2xl bg-red-100 p-5 text-center text-red-700">{booksError}</div>
+          {:else if filteredBuku.length > 0}
+            {#each filteredBuku as buku (buku.id)}
+              <BookCard {buku} onbukaDetail={handleBukaDetail} />
+            {/each}
+          {:else}
+            <div class="col-span-full rounded-3xl border border-gray-200 bg-white/50 py-16 text-center">
+              <div class="mb-4 text-4xl">📚</div>
+              <h3 class="text-xl font-bold text-gray-700">
+                {searchQuery.trim() ? "Buku tidak ditemukan" : "Koleksi buku belum tersedia"}
+              </h3>
+              <p class="mt-2 text-gray-500">
+                {searchQuery.trim() ? "Coba kata pencarian lain." : "Silakan kembali lagi nanti."}
+              </p>
+            </div>
+          {/if}
+        </div>
+      </section>
+    {:else}
     <!-- Seksyen Hero -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[70vh]">
       <!-- Bahagian Kiri -->
@@ -106,20 +127,15 @@
         </p>
 
         <div class="flex flex-wrap gap-4 pt-2">
-          <button class="bg-[#9B9AFF] hover:bg-[#8382ff] text-white text-sm font-bold py-3.5 px-8 rounded-full shadow-[0_8px_20px_rgba(155,154,255,0.4)] transition transform hover:-translate-y-1">
+          <Link to="/login" class="rounded-full bg-[#9B9AFF] px-8 py-3.5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(155,154,255,0.4)] transition hover:-translate-y-1 hover:bg-[#8382ff]">
             Mulai Sekarang →
-          </button>
-          <button class="bg-white hover:bg-gray-50 text-[#9B9AFF] border border-[#B8B8FF] text-sm font-bold py-3.5 px-8 rounded-full shadow-sm transition">
+          </Link>
+          <Link to="/koleksi" class="rounded-full border border-[#B8B8FF] bg-white px-8 py-3.5 text-sm font-bold text-[#9B9AFF] shadow-sm transition hover:bg-gray-50">
             Lihat Koleksi
-          </button>
+          </Link>
         </div>
 
         <div class="flex gap-8 pt-6">
-          <div>
-            <h3 class="text-2xl font-extrabold text-[#9B9AFF]">{bukuPopuler.length}</h3>
-            <p class="text-xs text-gray-500 font-semibold mt-1">Buku Ditampilkan</p>
-          </div>
-          <div class="w-px bg-gray-200"></div>
           <div>
             <h3 class="text-2xl font-extrabold text-[#9B9AFF]">24/7</h3>
             <p class="text-xs text-gray-500 font-semibold mt-1">Akses</p>
@@ -165,17 +181,17 @@
 <!-- ========================================== -->
     <!-- SEKSYEN TENTANG (TAMBAHAN BARU)            -->
     <!-- ========================================== -->
-    <section class="w-full mt-32 relative z-20">
+    <section id="tentang" class="w-full mt-32 relative z-20 scroll-mt-8">
       <div class="bg-white/60 backdrop-blur-lg rounded-[3rem] p-10 md:p-16 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 relative overflow-hidden">
         
         <!-- Ornamen dekoratif -->
         <div class="absolute -top-10 -right-10 w-40 h-40 bg-[#DFFCE2] rounded-full blur-2xl opacity-80 pointer-events-none"></div>
         <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-[#AADEFF] rounded-full blur-2xl opacity-60 pointer-events-none"></div>
 
-        <div class="relative z-10 flex flex-col lg:flex-row gap-12 items-center">
+        <div class="relative z-10">
           
           <!-- Teks Penjelasan -->
-          <div class="lg:w-1/2 space-y-6">
+          <div class="max-w-3xl space-y-6">
             <div class="inline-block bg-[#B8B8FF]/20 text-[#9B9AFF] font-bold px-4 py-1.5 rounded-full text-sm mb-2 shadow-sm border border-[#B8B8FF]/30">
               Tentang Kami
             </div>
@@ -198,70 +214,36 @@
             </ul>
           </div>
 
-          <!-- Kartu Fitur (Grid) -->
-          <div class="lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-            
-            <!-- Kartu 1 -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 transform sm:translate-y-6 hover:-translate-y-2 transition duration-300">
-              <div class="w-14 h-14 bg-[#9B9AFF]/10 rounded-2xl flex items-center justify-center text-3xl mb-5 shadow-inner">
-                🚀
-              </div>
-              <h4 class="font-extrabold text-gray-800 mb-2 text-lg">Akses Ngebut</h4>
-              <p class="text-sm text-gray-500 font-medium leading-relaxed">Sistem pencarian instan yang membuatmu bisa menemukan buku incaran dalam hitungan detik.</p>
-            </div>
-            
-            <!-- Kartu 2 -->
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:-translate-y-2 transition duration-300">
-              <div class="w-14 h-14 bg-[#AADEFF]/20 rounded-2xl flex items-center justify-center text-3xl mb-5 shadow-inner">
-                📱
-              </div>
-              <h4 class="font-extrabold text-gray-800 mb-2 text-lg">Multi Perangkat</h4>
-              <p class="text-sm text-gray-500 font-medium leading-relaxed">Mulai baca dari laptop, lanjutkan dari HP. Sinkronisasi otomatis di mana saja kamu berada.</p>
-            </div>
-
-          </div>
         </div>
       </div>
     </section>
-    <!-- ========================================== -->
-    <!-- SEKSYEN KOLEKSI (DIKEMBALIKAN & SELALU TAMPIL) -->
-    <section class="w-full mt-24 relative z-20 pb-16">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 border-b border-gray-200 pb-4 gap-4">
-        <div>
-          <h2 class="text-3xl font-extrabold text-gray-800">
-            Jelajahi <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#9B9AFF] to-[#60c4ff]">Koleksi</span>
-          </h2>
-          <p class="text-gray-500 mt-2 text-sm font-medium">Temukan buku-buku menarik untuk dibaca hari ini.</p>
-        </div>
-        
-        <!-- Indikator jika sedang mencari -->
-        {#if searchQuery.length > 0}
-          <div class="bg-[#DFFCE2] text-green-700 px-4 py-2 rounded-full text-sm font-bold shadow-sm">
-            Hasil untuk: "{searchQuery}"
-          </div>
-        {/if}
+    <section id="keunggulan" class="mt-24 w-full scroll-mt-8">
+      <div class="mb-10 text-center">
+        <p class="text-sm font-bold uppercase tracking-wide text-[#9B9AFF]">Keunggulan</p>
+        <h2 class="mt-2 text-3xl font-extrabold text-gray-800">Kenapa memilih PerpusFun?</h2>
+        <p class="mx-auto mt-3 max-w-2xl text-gray-600">
+          Temukan dan pinjam buku dengan mudah melalui pengalaman perpustakaan digital yang praktis.
+        </p>
       </div>
-
-      <!-- Grid Kartu Buku -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        {#if isLoadingBooks}
-          <p class="col-span-full py-12 text-center text-gray-500">Memuat koleksi buku...</p>
-        {:else if booksError}
-          <div role="alert" class="col-span-full rounded-2xl bg-red-100 p-5 text-center text-red-700">{booksError}</div>
-        {:else if filteredBuku.length > 0}
-          {#each filteredBuku as buku (buku.id)}
-            <BookCard {buku} onbukaDetail={handleBukaDetail} />
-          {/each}
-        {:else}
-          <!-- Pesan jika buku yang dicari tidak ada -->
-          <div class="col-span-full text-center py-16 bg-white/50 rounded-3xl border border-gray-200">
-            <div class="text-4xl mb-4">🕵️‍♂️</div>
-            <h3 class="text-xl font-bold text-gray-700">Koleksi buku belum tersedia</h3>
-            <p class="text-gray-500 mt-2">Coba lagi nanti atau ubah kata pencarian.</p>
-          </div>
-        {/if}
+      <div class="grid gap-6 md:grid-cols-3">
+        <article class="rounded-3xl border border-gray-100 bg-white p-7 shadow-sm">
+          <div class="mb-4 text-4xl">🔎</div>
+          <h3 class="mb-2 text-lg font-extrabold text-gray-800">Pencarian mudah</h3>
+          <p class="text-sm leading-relaxed text-gray-600">Cari buku dari koleksi perpustakaan dan temukan bacaan yang sesuai minatmu.</p>
+        </article>
+        <article class="rounded-3xl border border-gray-100 bg-white p-7 shadow-sm">
+          <div class="mb-4 text-4xl">📚</div>
+          <h3 class="mb-2 text-lg font-extrabold text-gray-800">Koleksi terpusat</h3>
+          <p class="text-sm leading-relaxed text-gray-600">Lihat ketersediaan buku dan riwayat peminjaman dalam satu platform.</p>
+        </article>
+        <article class="rounded-3xl border border-gray-100 bg-white p-7 shadow-sm">
+          <div class="mb-4 text-4xl">💻</div>
+          <h3 class="mb-2 text-lg font-extrabold text-gray-800">Praktis di web</h3>
+          <p class="text-sm leading-relaxed text-gray-600">Jelajahi katalog dan kelola peminjaman langsung dari perangkatmu.</p>
+        </article>
       </div>
     </section>
+    {/if}
   </div>
 
   {#if showModal}

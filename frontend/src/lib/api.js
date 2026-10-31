@@ -135,6 +135,7 @@ export const booksAPI = {
         stock,
       }),
     }),
+
 };
 
 // Members endpoints
