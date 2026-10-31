@@ -7,6 +7,7 @@
   import Daftar from "./pages/Daftar.svelte";
   import Dashboard from "./pages/Dashboard.svelte";
   import Koleksi from "./pages/Koleksi.svelte";
+  import Members from "./pages/Members.svelte";
 
   export let url = "";
 </script>
@@ -29,6 +30,10 @@
 
   <Route path="/koleksi">
     <Koleksi />
+  </Route>
+
+  <Route path="/members">
+    <Members />
   </Route>
 
   <!-- Rute Halaman Dashboard (Protected) -->
