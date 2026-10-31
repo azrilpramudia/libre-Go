@@ -19,5 +19,8 @@
   },
   "dependencies": {
     "svelte-routing": "^2.13.0"
+  },
+  "overrides": {
+    "deepmerge": "4.1.2"
   }
 }
