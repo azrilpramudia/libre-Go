@@ -1,5 +1,5 @@
 <script>
-  import { navigate } from 'svelte-routing';
+  import { Link, navigate } from 'svelte-routing';
   import { currentMember, isAuthenticated } from '../lib/auth.js';
   import { loansAPI } from '../lib/api.js';
 
@@ -95,6 +95,9 @@
 
     <!-- Footer Modal: Tombol Aksi -->
     <div class="flex justify-end gap-3">
+       <Link to={`/books/${buku.id}`} onclick={tutupModal} class="px-5 py-2.5 rounded-full border-2 border-[#B8B8FF] text-[#8382ff] hover:bg-[#B8B8FF]/10 transition font-bold text-sm">
+         Detail Buku
+       </Link>
        <button class="px-5 py-2.5 rounded-full border-2 border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300 transition font-bold text-sm" onclick={tutupModal}>
          Tutup
        </button>

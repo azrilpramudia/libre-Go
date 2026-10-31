@@ -8,6 +8,8 @@
   import Dashboard from "./pages/Dashboard.svelte";
   import Koleksi from "./pages/Koleksi.svelte";
   import Members from "./pages/Members.svelte";
+  import ImportBuku from "./pages/ImportBuku.svelte";
+  import DetailBuku from "./pages/DetailBuku.svelte";
 
   export let url = "";
 </script>
@@ -30,6 +32,14 @@
 
   <Route path="/koleksi">
     <Koleksi />
+  </Route>
+
+  <Route path="/books/import">
+    <ImportBuku />
+  </Route>
+
+  <Route path="/books/:id" let:params>
+    <DetailBuku id={params.id} />
   </Route>
 
   <Route path="/members">
