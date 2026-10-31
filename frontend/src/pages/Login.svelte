@@ -1,24 +1,39 @@
 <script>
-  import { Link } from "svelte-routing";
+  import { Link, navigate } from "svelte-routing";
+  import { auth, authIsLoading, authError } from "../lib/auth.js";
 
-  // Variabel untuk mengontrol apakah layar menampilkan Login atau Register
-  let isLogin = true; 
+  let isLogin = $state(true);
+  let nama = $state("");
+  let email = $state("");
+  let phone = $state("");
+  let password = $state("");
+  let localError = $state("");
 
-  // Variabel penampung inputan user (otomatis sinkron dengan UI)
-  let nama = "";
-  let email = "";
-  let password = "";
-  let isLoading = false;
+  async function handleSubmit(e) {
+    e.preventDefault();
+    localError = "";
 
-  // Fungsi simulasi saat tombol ditekan
-  function handleSubmit() {
-    isLoading = true;
-    
-    // Nanti di sini fungsi fetch() ke Golang dipanggil
-    setTimeout(() => {
-      isLoading = false;
-      alert(isLogin ? `Berhasil Login sebagai ${email}!` : `Berhasil Daftar untuk ${nama}!`);
-    }, 1500);
+    try {
+      if (isLogin) {
+        // Login
+        await auth.login(email, password);
+        // Navigate to dashboard on success
+        navigate("/dashboard");
+      } else {
+        // Register
+        await auth.register(nama, email, phone, password);
+        // After successful register, automatically login
+        await auth.login(email, password);
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      localError = err.data?.error || err.message || "An error occurred";
+    }
+  }
+
+  function clearError() {
+    localError = "";
+    auth.clearError();
   }
 </script>
 
@@ -49,8 +64,16 @@
     </p>
 
     <!-- Form -->
-    <form on:submit|preventDefault={handleSubmit} class="space-y-5">
+    <form onsubmit={handleSubmit} class="space-y-5">
       
+      <!-- Error Message -->
+      {#if localError || $authError}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-2xl text-sm font-medium">
+          {localError || $authError}
+          <button type="button" onclick={clearError} class="ml-2 font-bold hover:underline">✕</button>
+        </div>
+      {/if}
+
       <!-- Input Nama (Hanya muncul jika di mode Register) -->
       {#if !isLogin}
         <div>
@@ -61,6 +84,17 @@
             bind:value={nama} 
             required 
             placeholder="Ketik nama kamu..."
+            class="w-full bg-white/60 border border-white/80 rounded-2xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-[#9B9AFF] transition shadow-sm"
+          />
+        </div>
+
+        <div>
+          <label for="inputPhone" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">No. Telepon</label>
+          <input 
+            id="inputPhone"
+            type="tel" 
+            bind:value={phone} 
+            placeholder="08xxxxxxxxxx"
             class="w-full bg-white/60 border border-white/80 rounded-2xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-[#9B9AFF] transition shadow-sm"
           />
         </div>
@@ -93,10 +127,10 @@
       <!-- Tombol Submit -->
       <button 
         type="submit" 
-        disabled={isLoading}
+        disabled={$authIsLoading}
         class="w-full mt-4 bg-[#9B9AFF] hover:bg-[#8382ff] text-white font-bold py-4 rounded-2xl shadow-lg transition transform hover:-translate-y-1 disabled:opacity-70 disabled:transform-none"
       >
-        {isLoading ? 'Memproses...' : (isLogin ? 'Masuk Sekarang' : 'Daftar Akun')}
+        {$authIsLoading ? 'Memproses...' : (isLogin ? 'Masuk Sekarang' : 'Daftar Akun')}
       </button>
     </form>
 
@@ -106,7 +140,7 @@
       <!-- Mengubah nilai isLogin saat di-klik -->
       <button 
         type="button" 
-        on:click={() => isLogin = !isLogin} 
+        onclick={() => isLogin = !isLogin} 
         class="text-[#9B9AFF] font-bold hover:underline ml-1 focus:outline-none"
       >
         {isLogin ? 'Daftar di sini' : 'Login dong'}

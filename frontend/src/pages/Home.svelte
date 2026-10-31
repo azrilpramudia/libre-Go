@@ -1,31 +1,41 @@
 <script>
+  import { onMount } from "svelte";
   import { Link } from "svelte-routing";
   import BookCard from "../components/BookCard.svelte";
   import BookModal from '../components/BookModal.svelte';
   import Footer from '../components/Footer.svelte';
+  import { booksAPI } from "../lib/api.js";
 
-  let bukuPopuler = [
-    { id: 1, judul: "Petualangan Si Kancil", penulis: "Anonim", status: "Tersedia", cover: "bg-[#AADEFF]" },
-    { id: 2, judul: "Belajar Svelte 5", penulis: "Frontend Ninja", status: "Dipinjam", cover: "bg-[#B8B8FF]" },
-    { id: 3, judul: "Misteri Hutan Berbisik", penulis: "Budi Santoso", status: "Tersedia", cover: "bg-[#9B9AFF]" },
-    { id: 4, judul: "Resep Kue Kering", penulis: "Chef Juna", status: "Tersedia", cover: "bg-[#DFFCE2]" },
-  ];
-
-  let searchQuery = "";
-  
-  $: filteredBuku = bukuPopuler.filter((buku) =>
-    buku.judul.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    buku.penulis.toLowerCase().includes(searchQuery.toLowerCase())
+  let bukuPopuler = $state([]);
+  let searchQuery = $state("");
+  let isLoadingBooks = $state(true);
+  let booksError = $state("");
+  let filteredBuku = $derived(
+    bukuPopuler.filter((buku) =>
+      buku.title?.toLowerCase().includes(searchQuery.toLowerCase())
+    )
   );
+  let showModal = $state(false);
+  let selectedBuku = $state(null);
 
-  let showModal = false;
-  /** @type {{id: number, judul: string, penulis: string, status: string, cover: string} | null} */
-  let selectedBuku = null;
+  onMount(loadBooks);
 
-  /** @param {CustomEvent} event */
-  function handleBukaDetail(event) {
-    selectedBuku = event.detail; 
-    showModal = true;            
+  async function loadBooks() {
+    isLoadingBooks = true;
+    booksError = "";
+    try {
+      const response = await booksAPI.list(8);
+      bukuPopuler = response.data || [];
+    } catch (error) {
+      booksError = error.data?.error || error.message || "Gagal memuat koleksi buku.";
+    } finally {
+      isLoadingBooks = false;
+    }
+  }
+
+  function handleBukaDetail(buku) {
+    selectedBuku = buku;
+    showModal = true;
   }
 </script>
 
@@ -104,8 +114,8 @@
 
         <div class="flex gap-8 pt-6">
           <div>
-            <h3 class="text-2xl font-extrabold text-[#9B9AFF]">1000+</h3>
-            <p class="text-xs text-gray-500 font-semibold mt-1">Koleksi Buku</p>
+            <h3 class="text-2xl font-extrabold text-[#9B9AFF]">{bukuPopuler.length}</h3>
+            <p class="text-xs text-gray-500 font-semibold mt-1">Buku Ditampilkan</p>
           </div>
           <div class="w-px bg-gray-200"></div>
           <div>
@@ -232,22 +242,28 @@
 
       <!-- Grid Kartu Buku -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        {#each filteredBuku as buku (buku.id)}
-          <BookCard {buku} on:bukaDetail={handleBukaDetail} />
+        {#if isLoadingBooks}
+          <p class="col-span-full py-12 text-center text-gray-500">Memuat koleksi buku...</p>
+        {:else if booksError}
+          <div role="alert" class="col-span-full rounded-2xl bg-red-100 p-5 text-center text-red-700">{booksError}</div>
+        {:else if filteredBuku.length > 0}
+          {#each filteredBuku as buku (buku.id)}
+            <BookCard {buku} onbukaDetail={handleBukaDetail} />
+          {/each}
         {:else}
           <!-- Pesan jika buku yang dicari tidak ada -->
           <div class="col-span-full text-center py-16 bg-white/50 rounded-3xl border border-gray-200">
             <div class="text-4xl mb-4">🕵️‍♂️</div>
-            <h3 class="text-xl font-bold text-gray-700">Waduh, bukunya tidak ditemukan!</h3>
-            <p class="text-gray-500 mt-2">Coba cari dengan kata kunci judul atau nama penulis yang lain.</p>
+            <h3 class="text-xl font-bold text-gray-700">Koleksi buku belum tersedia</h3>
+            <p class="text-gray-500 mt-2">Coba lagi nanti atau ubah kata pencarian.</p>
           </div>
-        {/each}
+        {/if}
       </div>
     </section>
   </div>
 
   {#if showModal}
-    <BookModal buku={selectedBuku} on:close={() => showModal = false} />
+    <BookModal buku={selectedBuku} onclose={() => (showModal = false)} onborrowed={loadBooks} />
   {/if}
 
   <Footer />
