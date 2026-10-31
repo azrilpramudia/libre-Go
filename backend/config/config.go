@@ -8,6 +8,16 @@ import (
 	"strconv"
 )
 
+func AppAddress() (string, error) {
+	port := os.Getenv("APP_PORT")
+	portNumber, err := strconv.Atoi(port)
+	if err != nil || portNumber < 1 || portNumber > 65535 {
+		return "", errors.New("APP_PORT must be a valid port number between 1 and 65535")
+	}
+
+	return ":" + port, nil
+}
+
 func DatabaseURL() (string, error) {
 	if databaseURL := os.Getenv("DATABASE_URL"); databaseURL != "" {
 		return databaseURL, nil

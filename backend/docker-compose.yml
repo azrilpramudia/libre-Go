@@ -5,7 +5,9 @@ services:
       - "5000:5000"
     env_file: .env
     environment:
+      DATABASE_URL: ""
       DB_HOST: postgres
+      DB_PORT: 5432
       REDIS_ADDR: redis:6379
     depends_on:
       - postgres
@@ -19,7 +21,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
