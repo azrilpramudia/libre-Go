@@ -5,6 +5,7 @@
   import BookModal from '../components/BookModal.svelte';
   import Footer from '../components/Footer.svelte';
   import { booksAPI } from "../lib/api.js";
+  import { currentMember, isAuthenticated } from "../lib/auth.js";
 
   let bukuPopuler = $state([]);
   let searchQuery = $state("");
@@ -73,18 +74,19 @@
           <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">🔍</span>
         </div>
 
-        <!-- TOMBOL LOGIN & DAFTAR BARU -->
-        <Link to="/login">
-          <span class="text-sm font-bold text-gray-700 hover:text-[#9B9AFF] transition cursor-pointer hidden sm:block">
-            Login
-          </span>
-        </Link>
-        <Link to="/daftar">
-          <span class="bg-[#9B9AFF] hover:bg-[#8382ff] text-white text-sm font-bold py-2.5 px-6 rounded-full shadow-[0_4px_15px_rgba(155,154,255,0.4)] transition transform hover:-translate-y-1 cursor-pointer whitespace-nowrap">
-            Daftar
-          </span>
-        </Link>
-        
+        {#if $isAuthenticated}
+          <Link to="/dashboard">
+            <span class="text-sm font-bold text-gray-700 hover:text-[#9B9AFF] transition cursor-pointer">
+              Hi, {$currentMember?.full_name?.split(" ")[0] || "Member"}
+            </span>
+          </Link>
+        {:else}
+          <Link to="/login">
+            <span class="text-sm font-bold text-gray-700 hover:text-[#9B9AFF] transition cursor-pointer">
+              Login
+            </span>
+          </Link>
+        {/if}
       </div>
     </nav>
     
