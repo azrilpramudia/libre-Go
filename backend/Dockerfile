@@ -17,6 +17,6 @@ WORKDIR /app
 COPY --from=builder /app/bin/api .
 COPY .env.example .env
 
-EXPOSE 8080
+EXPOSE 5000
 
 CMD ["./api"]

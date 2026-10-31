@@ -95,6 +95,12 @@ func main() {
 		loans.GET("/member/:memberId", loanHandler.ListByMember)
 	}
 
-	log.Println("server running on :5000")
-	r.Run(":5000")
+	address, err := config.AppAddress()
+	if err != nil {
+		log.Fatalf("failed to configure API address: %v", err)
+	}
+	log.Printf("server running on %s", address)
+	if err := r.Run(address); err != nil {
+		log.Fatalf("failed to start server on %s: %v", address, err)
+	}
 }
