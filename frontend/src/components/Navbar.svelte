@@ -5,10 +5,19 @@
   let { searchQuery = $bindable("") } = $props();
 
   function scrollToSection(sectionId) {
-    document.getElementById(sectionId)?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
+    const scroll = () =>
+      document.getElementById(sectionId)?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+
+    if (window.location.pathname !== "/") {
+      navigate("/");
+      window.setTimeout(scroll, 100);
+      return;
+    }
+
+    scroll();
   }
 
   function logout() {
@@ -17,68 +26,48 @@
   }
 </script>
 
-<nav class="flex flex-wrap justify-between items-center mb-16 bg-white/70 backdrop-blur-md px-6 py-4 rounded-full border border-gray-100 shadow-sm">
-  <div class="flex items-center gap-2">
-    <div class="text-3xl">📚</div>
-    <span class="text-xl font-extrabold text-[#9B9AFF] tracking-wide">PerpusFun</span>
-  </div>
+<nav class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm sm:px-6">
+  <Link to="/" class="flex shrink-0 items-center gap-3" aria-label="PerpusFun, halaman utama">
+    <img src="/logo-perpusfun.svg" alt="" class="h-10 w-10 shrink-0" />
+    <span class="text-lg font-bold tracking-tight text-slate-900">Perpus<span class="text-blue-600">Fun</span></span>
+  </Link>
 
-  <div class="hidden lg:flex gap-8 text-sm font-semibold text-gray-600">
+  <div class="order-3 flex w-full items-center gap-6 text-sm font-medium text-slate-600 sm:order-none sm:w-auto">
     {#if $isAuthenticated}
-      <Link to="/koleksi">
-        <span class="hover:text-[#9B9AFF] transition cursor-pointer">Koleksi Buku</span>
-      </Link>
+      <Link to="/koleksi" class="transition hover:text-blue-600">Koleksi Buku</Link>
+      <Link to="/dashboard" class="transition hover:text-blue-600">Peminjaman</Link>
     {:else}
-      <Link to="/" onclick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-        <span class="hover:text-[#9B9AFF] transition cursor-pointer">Home</span>
-      </Link>
-      <button
-        type="button"
-        onclick={() => scrollToSection("tentang")}
-        class="hover:text-[#9B9AFF] transition cursor-pointer"
-      >
-        Tentang
-      </button>
-      <button
-        type="button"
-        onclick={() => scrollToSection("keunggulan")}
-        class="hover:text-[#9B9AFF] transition cursor-pointer"
-      >
-        Keunggulan
-      </button>
+      <Link to="/" class="transition hover:text-blue-600">Beranda</Link>
+      <button type="button" onclick={() => scrollToSection("tentang")} class="transition hover:text-blue-600">Tentang</button>
+      <button type="button" onclick={() => scrollToSection("keunggulan")} class="transition hover:text-blue-600">Keunggulan</button>
     {/if}
   </div>
 
-  <div class="flex items-center gap-4">
+  <div class="ml-auto flex items-center gap-3">
     {#if $isAuthenticated}
-      <div class="flex items-center gap-4">
-        <div class="relative hidden md:block w-48 lg:w-64">
-          <input
-            type="text"
-            bind:value={searchQuery}
-            placeholder="Cari buku..."
-            class="w-full pl-5 pr-10 py-2.5 rounded-full border border-gray-200 bg-gray-50 focus:outline-none focus:border-[#9B9AFF] text-sm text-gray-700 transition"
-          />
-          <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm">🔍</span>
-        </div>
-        <Link to="/dashboard">
-          <span class="text-sm font-bold text-gray-700 hover:text-[#9B9AFF] transition cursor-pointer">
-            Hi, {$currentMember?.full_name?.split(" ")[0] || "Member"}
-          </span>
-        </Link>
-        <button
-          type="button"
-          onclick={logout}
-          class="rounded-full bg-[#9B9AFF] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#8382ff]"
-        >
-          Logout
-        </button>
-      </div>
+      <label class="relative hidden md:block">
+        <span class="sr-only">Cari buku</span>
+        <input
+          type="search"
+          bind:value={searchQuery}
+          placeholder="Cari buku..."
+          class="w-44 rounded-xl border border-slate-200 bg-slate-50 py-2 pl-3 pr-9 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 lg:w-56"
+        />
+        <span aria-hidden="true" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">⌕</span>
+      </label>
+      <Link to="/dashboard" class="hidden text-sm font-medium text-slate-600 transition hover:text-blue-600 sm:block">
+        {$currentMember?.full_name?.split(" ")[0] || "Akun"}
+      </Link>
+      <button
+        type="button"
+        onclick={logout}
+        class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+      >
+        Keluar
+      </button>
     {:else}
-      <Link to="/login">
-        <span class="rounded-full bg-[#9B9AFF] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#8382ff]">
-          Login / Register
-        </span>
+      <Link to="/login" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">
+        Masuk
       </Link>
     {/if}
   </div>

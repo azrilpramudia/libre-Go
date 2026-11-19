@@ -1,17 +1,19 @@
 services:
   api:
-    build: .
+    build: ./backend
     ports:
       - "5000:5000"
-    env_file: .env
+    env_file: ./backend/.env
     environment:
       DATABASE_URL: ""
       DB_HOST: postgres
       DB_PORT: 5432
       REDIS_ADDR: redis:6379
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   postgres:
     image: postgres:16-alpine
@@ -24,6 +26,11 @@ services:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine

@@ -1,7 +1,9 @@
 <script>
   import { Link, navigate } from "svelte-routing";
-  import { auth, currentMember, isAuthenticated } from "../lib/auth.js";
+  import { currentMember, isAuthenticated } from "../lib/auth.js";
   import { loansAPI } from "../lib/api.js";
+  import Footer from "../components/Footer.svelte";
+  import Navbar from "../components/Navbar.svelte";
 
   let loans = $state([]);
   let isLoadingLoans = $state(false);
@@ -41,11 +43,6 @@
     }
   }
 
-  function handleLogout() {
-    auth.logout();
-    navigate("/");
-  }
-
   function getStatusBadgeColor(status) {
     const statusLower = status?.toLowerCase() || "";
     if (statusLower === "active" || statusLower === "borrowed") {
@@ -68,128 +65,95 @@
   }
 </script>
 
-<main class="relative min-h-screen bg-[#fdfdfd] text-gray-900 font-sans overflow-x-hidden flex flex-col">
-  <!-- Background Orbs -->
-  <div class="absolute -top-40 -left-40 w-[600px] h-[600px] bg-[#DFFCE2]/40 rounded-full blur-[120px] pointer-events-none"></div>
-  <div class="absolute top-[20%] -right-20 w-[700px] h-[700px] bg-[#B8B8FF]/20 rounded-full blur-[150px] pointer-events-none"></div>
-
-  <div class="relative z-10 max-w-6xl mx-auto px-6 py-6 w-full flex-grow flex flex-col">
-    <!-- Navbar -->
-    <nav class="flex flex-wrap justify-between items-center mb-10 bg-white/70 backdrop-blur-md px-6 py-4 rounded-full border border-gray-100 shadow-sm">
-      <div class="flex items-center gap-2">
-        <div class="text-3xl">📚</div>
-        <span class="text-xl font-extrabold text-[#9B9AFF] tracking-wide">PerpusFun</span>
+<main class="min-h-screen bg-slate-50 text-slate-900">
+  <div class="mx-auto max-w-7xl px-5 py-5 sm:px-8">
+    <Navbar />
+    <section class="mt-10 rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-9">
+      <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="text-sm font-semibold text-blue-600">Ringkasan akun</p>
+          <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+            Halo, {$currentMember?.full_name || "Member"}
+          </h1>
+          <p class="mt-2 text-sm text-slate-600">{$currentMember?.email}</p>
+          {#if $currentMember?.phone}
+            <p class="mt-1 text-sm text-slate-500">{$currentMember.phone}</p>
+          {/if}
+        </div>
+        <div class="min-w-40 rounded-2xl bg-blue-50 p-5">
+          <p class="text-sm font-medium text-blue-700">Total peminjaman</p>
+          <p class="mt-2 text-3xl font-bold text-blue-900">{loans.length}</p>
+        </div>
       </div>
+    </section>
 
-      <div class="flex items-center gap-4">
-        <Link to="/koleksi">
-          <span class="text-sm font-semibold text-gray-600 hover:text-[#9B9AFF] transition cursor-pointer">
-            Koleksi
-          </span>
-        </Link>
+    <section class="mt-10">
+      <div class="mb-5 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="text-sm font-semibold text-blue-600">Aktivitas akun</p>
+          <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">Riwayat peminjaman</h2>
+        </div>
         <button
-          onclick={handleLogout}
-          class="text-sm font-bold text-white bg-[#9B9AFF] hover:bg-[#8382ff] py-2.5 px-6 rounded-full shadow transition transform hover:-translate-y-1"
+          type="button"
+          onclick={fetchLoans}
+          disabled={isLoadingLoans}
+          class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 disabled:opacity-50"
         >
-          Logout
+          {isLoadingLoans ? "Memuat..." : "Perbarui"}
         </button>
       </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="space-y-8">
-      <!-- Profile Section -->
-      <section class="bg-white/60 backdrop-blur-lg rounded-3xl p-8 shadow-sm border border-white/50">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div>
-            <h1 class="text-4xl font-extrabold text-gray-800 mb-2">
-              Selamat Datang, {$currentMember?.full_name || "Member"}! 👋
-            </h1>
-            <p class="text-gray-600 font-medium">
-              Email: <span class="text-[#9B9AFF] font-bold">{$currentMember?.email}</span>
-            </p>
-            {#if $currentMember?.phone}
-              <p class="text-gray-600 font-medium">
-                Telepon: <span class="text-gray-700 font-bold">{$currentMember.phone}</span>
-              </p>
-            {/if}
-          </div>
-
-          <div class="bg-gradient-to-br from-[#9B9AFF] to-[#B8B8FF] rounded-2xl p-6 text-white shadow-lg">
-            <div class="text-4xl font-extrabold">{loans.length}</div>
-            <p class="text-sm font-semibold mt-1 opacity-90">Buku Dipinjam</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Active Loans Section -->
-      <section>
-        <div class="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
-          <h2 class="text-2xl font-extrabold text-gray-800">
-            Riwayat <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#9B9AFF] to-[#60c4ff]">Peminjaman</span>
-          </h2>
-          <button
-            onclick={fetchLoans}
-            disabled={isLoadingLoans}
-            class="text-sm font-bold text-[#9B9AFF] hover:text-[#8382ff] transition disabled:opacity-50"
-          >
-            🔄 Refresh
-          </button>
-        </div>
 
         <!-- Loading State -->
         {#if isLoadingLoans}
-          <div class="bg-white/60 backdrop-blur-lg rounded-3xl p-12 shadow-sm border border-white/50 text-center">
-            <div class="inline-block">
-              <div class="w-12 h-12 border-4 border-[#9B9AFF]/20 border-t-[#9B9AFF] rounded-full animate-spin"></div>
-            </div>
-            <p class="text-gray-600 font-medium mt-4">Memuat data peminjaman...</p>
+          <div class="rounded-2xl border border-slate-200 bg-white p-12 text-center">
+            <div class="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-blue-100 border-t-blue-600"></div>
+            <p class="mt-4 text-sm text-slate-500">Memuat data peminjaman...</p>
           </div>
         {/if}
 
         <!-- Error State -->
         {#if loansError && !isLoadingLoans}
-          <div class="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-2xl text-sm font-medium">
+          <div role="alert" class="rounded-2xl border border-red-100 bg-red-50 px-5 py-4 text-sm text-red-700">
             {loansError}
             <button
               type="button"
               onclick={() => (loansError = "")}
-              class="ml-2 font-bold hover:underline"
+              class="ml-2 font-semibold underline"
             >
-              ✕
+              Tutup
             </button>
           </div>
         {/if}
 
         <!-- Loans Table -->
         {#if !isLoadingLoans && loans.length > 0}
-          <div class="overflow-x-auto bg-white/60 backdrop-blur-lg rounded-3xl shadow-sm border border-white/50">
-            <table class="w-full">
-              <thead>
-                <tr class="border-b border-gray-200">
-                  <th class="text-left px-6 py-4 font-bold text-gray-700">ID Peminjaman</th>
-                  <th class="text-left px-6 py-4 font-bold text-gray-700">ID Buku</th>
-                  <th class="text-left px-6 py-4 font-bold text-gray-700">Tanggal Pinjam</th>
-                  <th class="text-left px-6 py-4 font-bold text-gray-700">Jatuh Tempo</th>
-                  <th class="text-left px-6 py-4 font-bold text-gray-700">Dikembalikan</th>
-                  <th class="text-left px-6 py-4 font-bold text-gray-700">Status</th>
-                  <th class="text-left px-6 py-4 font-bold text-gray-700">Denda</th>
+          <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <table class="w-full min-w-245 text-left">
+              <thead class="bg-slate-50">
+                <tr class="border-b border-slate-200">
+                  <th class="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500">ID peminjaman</th>
+                  <th class="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500">ID buku</th>
+                  <th class="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500">Tanggal pinjam</th>
+                  <th class="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500">Jatuh tempo</th>
+                  <th class="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500">Dikembalikan</th>
+                  <th class="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
+                  <th class="px-5 py-4 text-xs font-semibold uppercase tracking-wide text-slate-500">Denda</th>
                 </tr>
               </thead>
               <tbody>
                 {#each loans as loan (loan.id)}
-                  <tr class="border-b border-gray-100 hover:bg-white/40 transition">
-                    <td class="px-6 py-4 text-sm text-gray-700 font-mono">{loan.id.slice(0, 8)}...</td>
-                    <td class="px-6 py-4 text-sm text-gray-700 font-mono">{loan.book_id.slice(0, 8)}...</td>
-                    <td class="px-6 py-4 text-sm text-gray-600">{formatDate(loan.borrowed_at)}</td>
-                    <td class="px-6 py-4 text-sm text-gray-600">{formatDate(loan.due_at)}</td>
-                    <td class="px-6 py-4 text-sm text-gray-600">{formatDate(loan.returned_at)}</td>
-                    <td class="px-6 py-4">
-                      <span class="text-xs font-bold px-3 py-1 rounded-full {getStatusBadgeColor(loan.status)}">
+                  <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                    <td class="px-5 py-4 font-mono text-xs text-slate-600">{loan.id.slice(0, 8)}...</td>
+                    <td class="px-5 py-4 font-mono text-xs text-slate-600">{loan.book_id.slice(0, 8)}...</td>
+                    <td class="px-5 py-4 text-sm text-slate-600">{formatDate(loan.borrowed_at)}</td>
+                    <td class="px-5 py-4 text-sm text-slate-600">{formatDate(loan.due_at)}</td>
+                    <td class="px-5 py-4 text-sm text-slate-600">{formatDate(loan.returned_at)}</td>
+                    <td class="px-5 py-4">
+                      <span class="rounded-full px-3 py-1 text-xs font-semibold {getStatusBadgeColor(loan.status)}">
                         {loan.status || "Unknown"}
                       </span>
                     </td>
-                    <td class="px-6 py-4 text-sm font-bold text-gray-700">
+                    <td class="px-5 py-4 text-sm font-semibold text-slate-700">
                       Rp {loan.fine_amount?.toLocaleString("id-ID") || "0"}
                     </td>
                   </tr>
@@ -201,18 +165,15 @@
 
         <!-- Empty State -->
         {#if !isLoadingLoans && loans.length === 0 && !loansError}
-          <div class="bg-white/60 backdrop-blur-lg rounded-3xl p-12 shadow-sm border border-white/50 text-center">
-            <div class="text-5xl mb-4">📚</div>
-            <h3 class="text-xl font-bold text-gray-700 mb-2">Belum Ada Peminjaman</h3>
-            <p class="text-gray-500 font-medium mb-6">Mulai pinjam buku dari koleksi kami sekarang!</p>
-            <Link to="/koleksi">
-              <button class="bg-[#9B9AFF] hover:bg-[#8382ff] text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:-translate-y-1">
-                Jelajahi Koleksi →
-              </button>
+          <div class="rounded-2xl border border-slate-200 bg-white p-10 text-center">
+            <h3 class="text-lg font-semibold text-slate-900">Belum ada peminjaman</h3>
+            <p class="mt-2 text-sm text-slate-500">Mulai jelajahi koleksi buku untuk menemukan bacaanmu.</p>
+            <Link to="/koleksi" class="mt-5 inline-flex rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+              Jelajahi koleksi
             </Link>
           </div>
         {/if}
       </section>
-    </div>
   </div>
+  <Footer />
 </main>

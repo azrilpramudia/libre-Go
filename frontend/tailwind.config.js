@@ -7,13 +7,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        'fun-purple': '#9B9AFF',   /* Ungu atas */
-        'fun-lavender': '#B8B8FF', /* Ungu muda */
-        'fun-blue': '#AADEFF',     /* Biru muda */
-        'fun-mint': '#DFFCE2',     /* Hijau mint bawah */
+        'fun-blue': '#2563eb',
+        'fun-blue-dark': '#1e3a8a',
+        'fun-blue-soft': '#eff6ff',
       },
       fontFamily: {
-        sans: ['"Nunito"', 'sans-serif'], 
+        sans: ['"Poppins"', 'sans-serif'],
       }
     },
   },

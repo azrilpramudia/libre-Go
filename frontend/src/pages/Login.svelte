@@ -15,19 +15,15 @@
 
     try {
       if (isLogin) {
-        // Login
         await auth.login(email, password);
-        // Navigate to dashboard on success
         navigate("/dashboard");
       } else {
-        // Register
         await auth.register(nama, email, phone, password);
-        // After successful register, automatically login
         await auth.login(email, password);
         navigate("/dashboard");
       }
     } catch (err) {
-      localError = err.data?.error || err.message || "An error occurred";
+      localError = err.data?.error || err.message || "Terjadi kesalahan.";
     }
   }
 
@@ -37,115 +33,101 @@
   }
 </script>
 
-<main class="relative min-h-screen bg-[#f4f9f6] flex justify-center items-center overflow-hidden p-6 font-sans">
-  
-  <!-- Efek Background Orbs -->
-  <div class="absolute top-0 left-10 w-96 h-96 bg-[#AADEFF]/60 rounded-full blur-[100px] pointer-events-none animate-pulse"></div>
-  <div class="absolute bottom-0 right-10 w-96 h-96 bg-[#9B9AFF]/40 rounded-full blur-[100px] pointer-events-none"></div>
+<main class="flex min-h-screen items-center justify-center bg-slate-50 px-5 py-10 text-slate-900">
+  <section class="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-9">
+    <Link to="/" class="inline-flex items-center gap-3" aria-label="Kembali ke halaman utama">
+      <img src="/logo-perpusfun.svg" alt="" class="h-10 w-10 shrink-0" />
+      <span class="text-lg font-bold tracking-tight">Perpus<span class="text-blue-600">Fun</span></span>
+    </Link>
 
-  <!-- Container Form (Glassmorphism) -->
-  <div class="relative z-10 w-full max-w-md bg-white/40 backdrop-blur-2xl border border-white/60 p-10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
-    
-    <!-- Tombol Kembali ke Home -->
-    <div class="mb-8">
-      <Link to="/">
-        <span class="text-sm font-bold text-gray-500 hover:text-[#9B9AFF] transition cursor-pointer">
-          ← Kembali
-        </span>
-      </Link>
+    <div class="mt-9">
+      <p class="text-sm font-semibold text-blue-600">{isLogin ? "Selamat datang kembali" : "Mulai membaca bersama kami"}</p>
+      <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900">{isLogin ? "Masuk ke akun" : "Buat akun baru"}</h1>
+      <p class="mt-2 text-sm leading-6 text-slate-500">
+        {isLogin ? "Masuk untuk mengelola buku dan peminjamanmu." : "Daftar untuk mulai menjelajahi koleksi buku."}
+      </p>
     </div>
 
-    <!-- Header Form -->
-    <h2 class="text-4xl font-extrabold text-gray-900 mb-2">
-      {isLogin ? 'Selamat Datang! 👋' : 'Gabung Member ✨'}
-    </h2>
-    <p class="text-sm text-gray-600 mb-8 font-medium">
-      {isLogin ? 'Silakan login untuk mulai meminjam buku.' : 'Daftar sekarang dan nikmati ribuan koleksi digital.'}
-    </p>
-
-    <!-- Form -->
-    <form onsubmit={handleSubmit} class="space-y-5">
-      
-      <!-- Error Message -->
+    <form onsubmit={handleSubmit} class="mt-7 space-y-4">
       {#if localError || $authError}
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-2xl text-sm font-medium">
+        <div role="alert" class="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
           {localError || $authError}
-          <button type="button" onclick={clearError} class="ml-2 font-bold hover:underline">✕</button>
+          <button type="button" onclick={clearError} class="ml-2 font-semibold underline">Tutup</button>
         </div>
       {/if}
 
-      <!-- Input Nama (Hanya muncul jika di mode Register) -->
       {#if !isLogin}
         <div>
-          <label for="inputNama" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Nama Lengkap</label>
-          <input 
+          <label for="inputNama" class="mb-1.5 block text-sm font-medium text-slate-700">Nama lengkap</label>
+          <input
             id="inputNama"
-            type="text" 
-            bind:value={nama} 
-            required 
-            placeholder="Ketik nama kamu..."
-            class="w-full bg-white/60 border border-white/80 rounded-2xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-[#9B9AFF] transition shadow-sm"
+            type="text"
+            bind:value={nama}
+            required
+            autocomplete="name"
+            placeholder="Nama kamu"
+            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
           />
         </div>
-
         <div>
-          <label for="inputPhone" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">No. Telepon</label>
-          <input 
+          <label for="inputPhone" class="mb-1.5 block text-sm font-medium text-slate-700">Nomor telepon <span class="font-normal text-slate-400">(opsional)</span></label>
+          <input
             id="inputPhone"
-            type="tel" 
-            bind:value={phone} 
+            type="tel"
+            bind:value={phone}
+            autocomplete="tel"
             placeholder="08xxxxxxxxxx"
-            class="w-full bg-white/60 border border-white/80 rounded-2xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-[#9B9AFF] transition shadow-sm"
+            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
           />
         </div>
       {/if}
 
       <div>
-        <label for="inputEmail" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Email</label>
-        <input 
+        <label for="inputEmail" class="mb-1.5 block text-sm font-medium text-slate-700">Email</label>
+        <input
           id="inputEmail"
-          type="email" 
-          bind:value={email} 
-          required 
-          placeholder="contoh@email.com"
-          class="w-full bg-white/60 border border-white/80 rounded-2xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-[#9B9AFF] transition shadow-sm"
+          type="email"
+          bind:value={email}
+          required
+          autocomplete="email"
+          placeholder="nama@email.com"
+          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
         />
       </div>
 
       <div>
-        <label for="inputPassword" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Password</label>
-        <input 
+        <label for="inputPassword" class="mb-1.5 block text-sm font-medium text-slate-700">Password</label>
+        <input
           id="inputPassword"
-          type="password" 
-          bind:value={password} 
-          required 
-          placeholder="••••••••"
-          class="w-full bg-white/60 border border-white/80 rounded-2xl px-5 py-3 focus:outline-none focus:ring-2 focus:ring-[#9B9AFF] transition shadow-sm"
+          type="password"
+          bind:value={password}
+          required
+          autocomplete={isLogin ? "current-password" : "new-password"}
+          minlength={isLogin ? undefined : 6}
+          placeholder="Masukkan password"
+          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
         />
       </div>
 
-      <!-- Tombol Submit -->
-      <button 
-        type="submit" 
+      <button
+        type="submit"
         disabled={$authIsLoading}
-        class="w-full mt-4 bg-[#9B9AFF] hover:bg-[#8382ff] text-white font-bold py-4 rounded-2xl shadow-lg transition transform hover:-translate-y-1 disabled:opacity-70 disabled:transform-none"
+        class="mt-2 w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60"
       >
-        {$authIsLoading ? 'Memproses...' : (isLogin ? 'Masuk Sekarang' : 'Daftar Akun')}
+        {$authIsLoading ? "Memproses..." : isLogin ? "Masuk" : "Daftar"}
       </button>
     </form>
 
-    <!-- Toggle Login/Register -->
-    <div class="mt-8 text-center text-sm font-medium text-gray-600">
-      {isLogin ? 'Belum punya akun?' : 'Sudah jadi member?'} 
-      <!-- Mengubah nilai isLogin saat di-klik -->
-      <button 
-        type="button" 
-        onclick={() => isLogin = !isLogin} 
-        class="text-[#9B9AFF] font-bold hover:underline ml-1 focus:outline-none"
+    <p class="mt-6 text-center text-sm text-slate-500">
+      {isLogin ? "Belum punya akun?" : "Sudah punya akun?"}
+      <button
+        type="button"
+        onclick={() => (isLogin = !isLogin)}
+        class="ml-1 font-semibold text-blue-700 hover:text-blue-800"
       >
-        {isLogin ? 'Daftar di sini' : 'Login dong'}
+        {isLogin ? "Daftar" : "Masuk"}
       </button>
-    </div>
-
-  </div>
+    </p>
+    <Link to="/" class="mt-5 block text-center text-sm font-medium text-slate-500 transition hover:text-blue-700">Kembali ke beranda</Link>
+  </section>
 </main>
