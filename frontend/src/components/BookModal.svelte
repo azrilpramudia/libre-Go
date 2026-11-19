@@ -1,12 +1,12 @@
 <script>
-  import { Link, navigate } from 'svelte-routing';
-  import { currentMember, isAuthenticated } from '../lib/auth.js';
-  import { loansAPI } from '../lib/api.js';
+  import { Link, navigate } from "svelte-routing";
+  import { currentMember, isAuthenticated } from "../lib/auth.js";
+  import { loansAPI } from "../lib/api.js";
 
   let { buku, onclose, onborrowed } = $props();
 
   let isBorrowing = $state(false);
-  let borrowError = $state('');
+  let borrowError = $state("");
   let borrowSuccess = $state(false);
   let available = $state(0);
 
@@ -19,12 +19,12 @@
   }
 
   async function pinjamBuku() {
-    borrowError = '';
+    borrowError = "";
     borrowSuccess = false;
 
     if (!$isAuthenticated || !$currentMember?.id) {
       tutupModal();
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
@@ -35,18 +35,18 @@
       available -= 1;
       onborrowed?.();
     } catch (error) {
-      borrowError = error.data?.error || error.message || 'Gagal meminjam buku.';
+      borrowError = error.data?.error || error.message || "Gagal meminjam buku.";
     } finally {
       isBorrowing = false;
     }
   }
 </script>
 
-<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+<div class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
   <button
     type="button"
     aria-label="Tutup detail buku"
-    class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm"
+    class="absolute inset-0 bg-slate-950/45 backdrop-blur-sm"
     onclick={tutupModal}
   ></button>
 
@@ -55,74 +55,76 @@
     aria-modal="true"
     aria-labelledby="book-modal-title"
     tabindex="-1"
-    class="relative z-10 bg-white/90 backdrop-blur-xl rounded-3xl p-8 max-w-lg w-full shadow-2xl border border-white animate-fade-in-up"
+    class="relative z-10 my-auto w-full max-w-xl rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl sm:p-8"
   >
-    
-    <!-- Tombol Silang (X) di pojok kanan atas -->
-    <button class="absolute top-5 right-5 text-gray-400 hover:text-gray-700 transition" onclick={tutupModal}>
+    <button
+      type="button"
+      aria-label="Tutup"
+      class="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
+      onclick={tutupModal}
+    >
       ✕
     </button>
-    
-    <!-- Header Modal: Cover & Info Singkat -->
-    <div class="flex gap-6 items-center mb-6">
-       <div class="bg-[#AADEFF]/30 w-24 h-32 rounded-2xl flex items-center justify-center text-4xl shadow-inner shrink-0 overflow-hidden">
-         {#if buku.cover_url}
-           <img src={buku.cover_url} alt={`Sampul ${buku.title}`} class="w-full h-full object-cover" />
-         {:else}
-           📖
-         {/if}
-       </div>
-       <div>
-         <h2 id="book-modal-title" class="text-2xl font-bold text-gray-800 leading-tight mb-1">{buku.title}</h2>
-         <p class="text-gray-600 font-medium mb-3">ISBN: {buku.isbn || "Tidak tersedia"}</p>
-         <span class="text-xs font-bold px-3 py-1.5 rounded-full {available > 0 ? 'bg-[#DFFCE2] text-green-700' : 'bg-red-100 text-red-600'}">
-           {available > 0 ? `${available} tersedia` : "Habis"}
-         </span>
-       </div>
+
+    <div class="flex flex-col gap-5 pr-8 sm:flex-row">
+      <div class="h-40 w-32 shrink-0 overflow-hidden rounded-xl bg-blue-50">
+        {#if buku.cover_url}
+          <img src={buku.cover_url} alt={`Sampul ${buku.title}`} class="h-full w-full object-cover" />
+        {:else}
+          <div class="flex h-full items-center justify-center text-5xl text-blue-300" aria-hidden="true">▤</div>
+        {/if}
+      </div>
+      <div class="pt-1">
+        <p class="text-xs font-semibold uppercase tracking-wider text-blue-600">Informasi buku</p>
+        <h2 id="book-modal-title" class="mt-2 text-2xl font-bold leading-snug text-slate-900">{buku.title}</h2>
+        <p class="mt-2 text-sm text-slate-500">ISBN: {buku.isbn || "Tidak tersedia"}</p>
+        <span class="mt-4 inline-flex rounded-full px-3 py-1 text-xs font-semibold {available > 0 ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-600'}">
+          {available > 0 ? `${available} salinan tersedia` : "Stok habis"}
+        </span>
+      </div>
     </div>
-    
-    <div class="mb-8 rounded-2xl bg-gray-50 p-4 text-sm text-gray-600">
-      <p>Total stok: <strong>{buku.stock}</strong></p>
-      <p>Salinan tersedia: <strong>{available}</strong></p>
-    </div>
+
+    <dl class="mt-6 grid grid-cols-2 gap-3 rounded-2xl bg-slate-50 p-4 text-sm">
+      <div>
+        <dt class="text-slate-500">Total stok</dt>
+        <dd class="mt-1 font-semibold text-slate-900">{buku.stock}</dd>
+      </div>
+      <div>
+        <dt class="text-slate-500">Tersedia</dt>
+        <dd class="mt-1 font-semibold text-slate-900">{available}</dd>
+      </div>
+    </dl>
 
     {#if borrowError}
-      <p role="alert" class="mb-4 rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">{borrowError}</p>
+      <p role="alert" class="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{borrowError}</p>
     {/if}
     {#if borrowSuccess}
-      <p role="status" class="mb-4 rounded-xl bg-green-100 px-4 py-3 text-sm text-green-700">Buku berhasil dipinjam.</p>
+      <p role="status" class="mt-4 rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700">Buku berhasil dipinjam.</p>
     {/if}
 
-    <!-- Footer Modal: Tombol Aksi -->
-    <div class="flex justify-end gap-3">
-       <Link to={`/books/${buku.id}`} onclick={tutupModal} class="px-5 py-2.5 rounded-full border-2 border-[#B8B8FF] text-[#8382ff] hover:bg-[#B8B8FF]/10 transition font-bold text-sm">
-         Detail Buku
-       </Link>
-       <button class="px-5 py-2.5 rounded-full border-2 border-gray-200 text-gray-600 hover:bg-gray-100 hover:border-gray-300 transition font-bold text-sm" onclick={tutupModal}>
-         Tutup
-       </button>
-       <!-- Tombol Pinjam hanya aktif jika buku Tersedia -->
-       {#if available > 0}
-         <button onclick={pinjamBuku} disabled={isBorrowing || borrowSuccess} class="px-5 py-2.5 rounded-full bg-[#9B9AFF] hover:bg-[#8382ff] text-white transition font-bold text-sm shadow-md disabled:opacity-60">
-           {isBorrowing ? "Memproses..." : borrowSuccess ? "Berhasil Dipinjam" : "Pinjam Buku"}
-         </button>
-       {:else}
-         <button class="px-5 py-2.5 rounded-full bg-gray-300 text-gray-500 cursor-not-allowed font-bold text-sm" disabled>
-           Stok Habis
-         </button>
-       {/if}
+    <div class="mt-7 flex flex-wrap justify-end gap-3">
+      <button
+        type="button"
+        onclick={tutupModal}
+        class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+      >
+        Tutup
+      </button>
+      <Link
+        to={`/books/${buku.id}`}
+        onclick={tutupModal}
+        class="rounded-xl border border-blue-200 px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
+      >
+        Detail buku
+      </Link>
+      <button
+        type="button"
+        onclick={pinjamBuku}
+        disabled={available < 1 || isBorrowing || borrowSuccess}
+        class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+      >
+        {isBorrowing ? "Memproses..." : borrowSuccess ? "Berhasil dipinjam" : "Pinjam buku"}
+      </button>
     </div>
-
   </div>
 </div>
-
-<style>
-  /* Sedikit animasi CSS agar modal muncul dengan mulus */
-  .animate-fade-in-up {
-    animation: fadeInUp 0.3s ease-out forwards;
-  }
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px) scale(0.95); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-</style>

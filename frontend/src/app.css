@@ -1,6 +1,63 @@
 @import "tailwindcss";
 
+@theme {
+  --color-blue-50: #eff6ff;
+  --color-blue-600: #2563eb;
+  --color-blue-700: #1e3a8a;
+  --color-blue-800: #1e3a8a;
+  --color-blue-900: #1e3a8a;
+  --color-slate-200: #e2e8f0;
+  --color-slate-500: #64748b;
+  --color-slate-900: #1e3a8a;
+}
+
+:root {
+  font-family: "Poppins", sans-serif;
+  color: #1e3a8a;
+  background: #f8fafc;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-optical-sizing: auto;
+  font-weight: 400;
+
+  --color-primary: #2563eb;
+  --color-primary-dark: #1e3a8a;
+  --color-primary-soft: #eff6ff;
+  --color-text: #1e3a8a;
+  --color-muted: #64748b;
+  --color-border: #e2e8f0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
-  /* Memastikan background mint teraplikasi penuh */
-  background-color: #DFFCE2; 
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background: #f8fafc;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  color: #1e3a8a;
+  background: #bfdbfe;
 }

@@ -1,5 +1,7 @@
-include .env
+-include .env
 export
+
+.PHONY: run migrate-up migrate-down migrate-create sqlc-generate docker-up docker-down
 
 run:
 	air
@@ -17,7 +19,7 @@ sqlc-generate:
 	sqlc generate
 
 docker-up:
-	docker compose up -d --build
+	docker compose --env-file .env -f ../docker-compose.yml -p backend up -d --build
 
 docker-down:
-	docker compose down
+	docker compose --env-file .env -f ../docker-compose.yml -p backend down
